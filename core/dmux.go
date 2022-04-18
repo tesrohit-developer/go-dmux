@@ -2,6 +2,9 @@ package core
 
 import (
 	"fmt"
+	source "github.com/go-dmux/kafka"
+	"github.com/go-dmux/plugins"
+	"math"
 	"sync"
 	"time"
 )
@@ -22,6 +25,11 @@ const (
 	Failed uint8 = 2
 )
 
+type Sideline struct {
+	sideline bool
+	retries  int
+}
+
 //DmuxConf holds configuration parameters for Dmux
 type DmuxConf struct {
 	Size            int             `json:"size"`
@@ -30,6 +38,7 @@ type DmuxConf struct {
 	DistributorType DistributorType `json:"distributor_type"`
 	BatchSize       int             `json:"batch_size"`
 	Version         int             `json:"version"`
+	Sideline        Sideline        `json:"sideline"`
 }
 
 // ControlMsg is the struct passed to Dmux control Channel to enable it
@@ -61,7 +70,7 @@ type Sink interface {
 	// Consume method gets The interface.
 	//TODO currently this method does not return error, need to solve for error
 	// handling
-	Consume(msg interface{})
+	Consume(msg interface{}, retries int) error
 
 	//BatchConsume method is invoked in batch_size is configured
 	BatchConsume(msg []interface{}, version int)
@@ -98,6 +107,7 @@ type Dmux struct {
 	err                    chan error
 	distribute             Distributor
 	version                int
+	sideline               Sideline
 }
 
 const defaultSourceQSize int = 1
@@ -131,13 +141,14 @@ func GetDmux(conf DmuxConf, d Distributor) *Dmux {
 		version = conf.Version
 	}
 
-	output := &Dmux{conf.Size, batchSize, sourceQSize, sinkQSize, control, response, err, d, version}
+	output := &Dmux{conf.Size, batchSize, sourceQSize, sinkQSize,
+		control, response, err, d, version, conf.Sideline}
 	return output
 }
 
 //Connect method holds Dmux logic used to Connect Source to Sink
-func (d *Dmux) Connect(source Source, sink Sink) {
-	go d.run(source, sink)
+func (d *Dmux) Connect(source Source, sink Sink, sidelinePlugin interface{}) {
+	go d.run(source, sink, sidelinePlugin)
 }
 
 //Await method added to enable testing when using bounded source
@@ -189,9 +200,9 @@ func getStopMsg() ControlMsg {
 	return c
 }
 
-func (d *Dmux) run(source Source, sink Sink) {
+func (d *Dmux) run(source Source, sink Sink, sidelinePlugin interface{}) {
 
-	ch, wg := setup(d.size, d.sinkQSize, d.batchSize, sink, d.version)
+	ch, wg := setup(d.size, d.sinkQSize, d.batchSize, sink, d.version, d.sideline, sidelinePlugin)
 	in := make(chan interface{}, d.sourceQSize)
 	//start source
 	//TODO handle panic recovery if in channel is closed for shutdown
@@ -208,7 +219,7 @@ func (d *Dmux) run(source Source, sink Sink) {
 				fmt.Println("processing resize")
 				shutdown(ch, wg)
 				resizeMeta := ctrl.meta.(ResizeMeta)
-				ch, wg = setup(resizeMeta.newSize, d.sinkQSize, d.batchSize, sink, d.version)
+				ch, wg = setup(resizeMeta.newSize, d.sinkQSize, d.batchSize, sink, d.version, d.sideline, sidelinePlugin)
 				d.response <- ResponseMsg{ctrl.signal, Sucess}
 			} else if ctrl.signal == Stop {
 				fmt.Println("processing stop")
@@ -231,9 +242,13 @@ func shutdown(ch []chan interface{}, wg *sync.WaitGroup) {
 	wg.Wait()
 }
 
-func setup(size, qsize, batchSize int, sink Sink, version int) ([]chan interface{}, *sync.WaitGroup) {
+func setup(size, qsize, batchSize int, sink Sink, version int, sideline Sideline, sidelinePlugin interface{}) ([]chan interface{}, *sync.WaitGroup) {
 	if version == 1 && batchSize == 1 {
-		return simpleSetup(size, qsize, sink)
+		if sideline.sideline {
+			return simpleSetupWithSideline(size, qsize, sink, sideline.retries, sidelinePlugin)
+		} else {
+			return simpleSetup(size, qsize, sink)
+		}
 	} else {
 		return batchSetup(size, qsize, batchSize, sink, version)
 	}
@@ -302,6 +317,31 @@ func batchSetup(sz, qsz, batchsz int, sink Sink, version int) ([]chan interface{
 	return ch, wg
 }
 
+func simpleSetupWithSideline(size, qsize int, sink Sink, retries int, sidelinePlugin interface{}) ([]chan interface{}, *sync.WaitGroup) {
+	wg := new(sync.WaitGroup)
+	wg.Add(size)
+	ch := make([]chan interface{}, size)
+	for i := 0; i < size; i++ {
+		ch[i] = make(chan interface{}, qsize)
+		go func(index int) {
+			sk := sink.Clone()
+			for msg := range ch[index] {
+				val := msg.(source.KafkaMsg)
+				if sidelinePlugin.(plugins.CheckMessageSidelineImpl).CheckMessageSideline(val.GetRawMsg().Key) {
+					sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(msg)
+					continue
+				}
+				consumeError := sk.Consume(msg, retries)
+				if consumeError != nil && consumeError.Error() == "exceeded retries" {
+					sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(msg)
+				}
+			}
+			wg.Done()
+		}(i)
+	}
+	return ch, wg
+}
+
 func simpleSetup(size, qsize int, sink Sink) ([]chan interface{}, *sync.WaitGroup) {
 	wg := new(sync.WaitGroup)
 	wg.Add(size)
@@ -311,7 +351,7 @@ func simpleSetup(size, qsize int, sink Sink) ([]chan interface{}, *sync.WaitGrou
 		go func(index int) {
 			sk := sink.Clone()
 			for msg := range ch[index] {
-				sk.Consume(msg)
+				sk.Consume(msg, math.MaxInt)
 			}
 			wg.Done()
 		}(i)

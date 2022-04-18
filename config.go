@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	plugins "github.com/go-dmux/plugins"
 	"io/ioutil"
 	"log"
 	"os"
@@ -34,6 +35,25 @@ func (c ConnectionType) getConfig(data []byte) interface{} {
 		panic("Invalid Connection Type")
 
 	}
+}
+
+func getSidelinePlugin() interface{} {
+	sidelineImpls := plugins.NewManager("sideline-plugin",
+		"sideline-plugin-*", "./plugins/built", &plugins.CheckMessageSidelineImplPlugin{})
+	defer sidelineImpls.Dispose()
+	// Initialize sidelineImpls manager
+	err := sidelineImpls.Init()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	// Launch all greeters binaries
+	sidelineImpls.Launch()
+	p, err := sidelineImpls.GetInterface("em-sideline")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	return p
 }
 
 //Start invokes Run of the respective connection in a go routine
