@@ -11,6 +11,7 @@ COPY . .
 
 RUN git config --global http.sslverify false
 
+ENV GO111MODULE "on"
 RUN go build -o bin/go-dmux
 
 FROM golang:1.12-stretch as deploy
