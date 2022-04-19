@@ -2,13 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	plugins "github.com/go-dmux/plugins"
 	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/go-dmux/connection"
 	"github.com/go-dmux/logging"
+	"github.com/go-dmux/plugins"
 )
 
 //ConnectionType based on this type of Connection and related forks happen

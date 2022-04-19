@@ -1,4 +1,4 @@
-module github.com/go-dmux/sideline
+module github.com/go-dmux/plugins
 
 go 1.17
 
