@@ -130,7 +130,7 @@ func (h *HTTPSink) BatchConsume(msgs []interface{}, version int) {
 	}
 
 	//retry Execute till you succede based on retry config
-	status, _ := h.retryExecute(h.conf.Method, url, headers, payload, responseCodeEvaluation, math.MaxInt)
+	status, _ := h.retryExecute(h.conf.Method, url, headers, payload, responseCodeEvaluation, math.MaxInt32)
 
 	for _, msg := range msgs {
 		//retry Post till you succede infinitely
@@ -153,7 +153,7 @@ func (h *HTTPSink) Consume(msg interface{}, retries int) error {
 	h.retryPre(msg, url)
 
 	//retry Execute till you succede based on retry config
-	status, err := h.retryExecute(h.conf.Method, url, headers, payload, responseCodeEvaluation, math.MaxInt)
+	status, err := h.retryExecute(h.conf.Method, url, headers, payload, responseCodeEvaluation, math.MaxInt32)
 	if !status && err != nil {
 		return err
 	}
