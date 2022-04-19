@@ -351,7 +351,7 @@ func simpleSetup(size, qsize int, sink Sink) ([]chan interface{}, *sync.WaitGrou
 		go func(index int) {
 			sk := sink.Clone()
 			for msg := range ch[index] {
-				sk.Consume(msg, math.MaxInt)
+				sk.Consume(msg, math.MaxInt32)
 			}
 			wg.Done()
 		}(i)
