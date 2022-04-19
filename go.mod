@@ -2,9 +2,8 @@ module github.com/go-dmux
 
 go 1.12
 
-replace (
-	github.com/go-dmux/plugins => plugins
-)
+replace github.com/go-dmux/plugins => plugins
+
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
