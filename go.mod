@@ -4,7 +4,6 @@ go 1.12
 
 replace github.com/go-dmux/plugins => ./plugins
 
-
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/DataDog/zstd v1.3.5 // indirect
