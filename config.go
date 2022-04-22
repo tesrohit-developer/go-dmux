@@ -63,6 +63,7 @@ func (c ConnectionType) Start(conf interface{}, enableDebug bool) {
 		connObj := &connection.KafkaHTTPConn{
 			EnableDebugLog: enableDebug,
 			Conf:           conf,
+			SidelinePlugin: getSidelinePlugin(),
 		}
 		log.Println("Starting ", KafkaHTTP)
 		connObj.Run()
