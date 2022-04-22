@@ -3,7 +3,7 @@ package core
 import (
 	"fmt"
 	source "github.com/go-dmux/kafka"
-	"github.com/go-dmux/plugins"
+	"github.com/tesrohit-developer/go-dmux/plugins"
 	"math"
 	"sync"
 	"time"

@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-dmux/connection"
 	"github.com/go-dmux/logging"
-	"github.com/go-dmux/plugins"
+	"github.com/tesrohit-developer/go-dmux/plugins"
 )
 
 //ConnectionType based on this type of Connection and related forks happen

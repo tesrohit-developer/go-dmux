@@ -3,7 +3,7 @@ package connection
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-dmux/plugins"
+	"github.com/tesrohit-developer/go-dmux/plugins"
 	"hash/fnv"
 	"log"
 	"strconv"
