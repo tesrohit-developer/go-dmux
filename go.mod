@@ -1,4 +1,4 @@
-module github.com/go-dmux
+module github.com/tesrohit-developer/go-dmux
 
 go 1.12
 
@@ -16,16 +16,12 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/mux v1.7.3
-	github.com/hashicorp/go-plugin v1.4.3 // indirect
 	github.com/pierrec/lz4 v2.2.7+incompatible // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20190826022208-cac0b30c2563 // indirect
 	github.com/samuel/go-zookeeper v0.0.0-20180130194729-c4fab1ac1bec
 	github.com/stretchr/testify v1.4.0
-	github.com/wvanbergen/kafka v0.0.0-20171203153745-e2edea948ddf
-	github.com/wvanbergen/kazoo-go v0.0.0-20180202103751-f72d8611297a
-	golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3 // indirect
-	golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135 // indirect
+	github.com/wvanbergen/kafka v0.0.0-20171203153745-e2edea948ddf // indirect
+	github.com/wvanbergen/kazoo-go v0.0.0-20180202103751-f72d8611297a // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0-20170531160350-a96e63847dc3
-	honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc // indirect
 )
