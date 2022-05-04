@@ -4,7 +4,7 @@ go 1.12
 
 replace (
 	github.com/tesrohit-developer/go-dmux/plugins => ./plugins
-	github.com/go-dmux/connection => ./connection
+	github.com/go-dmux => ./
 )
 
 require (
