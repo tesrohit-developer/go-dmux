@@ -1,6 +1,6 @@
 module github.com/tesrohit-developer/go-dmux
 
-go 1.12
+go 1.17
 
 replace (
 	github.com/go-dmux => ./
