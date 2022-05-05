@@ -38,7 +38,7 @@ func (c ConnectionType) getConfig(data []byte) interface{} {
 }
 
 func getSidelinePlugin() interface{} {
-	sidelineImpls := plugins.NewManager("sideline-",
+	sidelineImpls := plugins.NewManager("sideline_plugin",
 		"sideline-*", "", &plugins.CheckMessageSidelineImplPlugin{})
 	defer sidelineImpls.Dispose()
 	// Initialize sidelineImpls manager
@@ -49,7 +49,7 @@ func getSidelinePlugin() interface{} {
 
 	// Launch all greeters binaries
 	sidelineImpls.Launch()
-	p, err := sidelineImpls.GetInterface("sideline-em")
+	p, err := sidelineImpls.GetInterface("em")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
