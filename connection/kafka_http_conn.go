@@ -3,7 +3,6 @@ package connection
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/tesrohit-developer/go-dmux/plugins"
 	"hash/fnv"
 	"log"
 	"strconv"
@@ -57,21 +56,7 @@ func (c *KafkaHTTPConn) Run() {
 	d := core.GetDistribution(conf.Dmux.DistributorType, h)
 
 	dmux := core.GetDmux(conf.Dmux, d)
-	plugin := plugins.NewManager(
-		"sideline_plugin",
-		"sideline-*",
-		"./plugins/built", &plugins.CheckMessageSidelineImplPlugin{})
-	defer plugin.Dispose()
-	err := plugin.Init()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	plugin.Launch()
-	emPlugin, err := plugin.GetInterface("em")
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	dmux.Connect(src, sk, emPlugin)
+	dmux.Connect(src, sk, c.SidelinePlugin)
 	dmux.Join()
 }
 
