@@ -9,7 +9,7 @@ import (
 // CheckMessageSidelineImpl is the interface that we're exposing as a plugin.
 type CheckMessageSidelineImpl interface {
 	CheckMessageSideline(key interface{}) bool
-	SidelineMessage(msg interface{})
+	SidelineMessage(KafkaSidelineMessage interface{})
 }
 
 // Here is an implementation that talks over RPC
@@ -30,9 +30,9 @@ func (g *CheckMessageSidelineRPC) CheckMessageSideline(key interface{}) bool {
 	return false
 }
 
-func (g *CheckMessageSidelineRPC) SidelineMessage(msg interface{}) {
+func (g *CheckMessageSidelineRPC) SidelineMessage(kafkaSidelineMessage interface{}) {
 	var resp bool
-	err := g.Client.Call("Plugin.SidelineMessage", msg, &resp)
+	err := g.Client.Call("Plugin.SidelineMessage", kafkaSidelineMessage, &resp)
 	if err != nil {
 		// You usually want your interfaces to return errors. If they don't,
 		// there isn't much other choice here.
