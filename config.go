@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-dmux/connection"
-	"github.com/go-dmux/logging"
+	"github.com/tesrohit-developer/go-dmux/connection"
+	"github.com/tesrohit-developer/go-dmux/logging"
 	"github.com/tesrohit-developer/go-dmux/plugins"
 )
 
