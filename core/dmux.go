@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	source "github.com/tesrohit-developer/go-dmux/kafka"
 	"github.com/tesrohit-developer/go-dmux/plugins"
@@ -329,7 +330,16 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 			sk := sink.Clone()
 			for msg := range ch[index] {
 				val := msg.(source.KafkaMsg)
-				if sidelinePlugin.(plugins.CheckMessageSidelineImpl).CheckMessageSideline(val.GetRawMsg().Key) {
+				var check = false
+				var checkErr = errors.New("")
+				for {
+					check, checkErr = sidelinePlugin.(plugins.CheckMessageSidelineImpl).CheckMessageSideline(val.GetRawMsg().Key)
+					if checkErr != nil {
+						break
+					}
+					continue
+				}
+				if check {
 					kafkaSidelineMessage := plugins.KafkaSidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
 						Partition:         val.GetRawMsg().Partition,
@@ -339,8 +349,13 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						ClusterName:       sideline.clusterName,
 						Message:           val.GetRawMsg().Value,
 					}
-					sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(kafkaSidelineMessage)
-					continue
+					for {
+						err := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(kafkaSidelineMessage)
+						if err != nil {
+							continue
+						}
+						break
+					}
 				}
 				consumeError := sk.Consume(msg, sideline.retries)
 				if consumeError != nil && consumeError.Error() == "exceeded retries" {
@@ -353,7 +368,13 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						ClusterName:       sideline.clusterName,
 						Message:           val.GetRawMsg().Value,
 					}
-					sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(kafkaSidelineMessage)
+					for {
+						err := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(kafkaSidelineMessage)
+						if err != nil {
+							continue
+						}
+						break
+					}
 				}
 			}
 			wg.Done()

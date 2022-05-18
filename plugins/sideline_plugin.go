@@ -8,8 +8,8 @@ import (
 
 // CheckMessageSidelineImpl is the interface that we're exposing as a plugin.
 type CheckMessageSidelineImpl interface {
-	CheckMessageSideline(key interface{}) bool
-	SidelineMessage(KafkaSidelineMessage interface{})
+	CheckMessageSideline(key interface{}) (bool, error)
+	SidelineMessage(KafkaSidelineMessage interface{}) error
 }
 
 // Here is an implementation that talks over RPC
@@ -17,7 +17,7 @@ type CheckMessageSidelineRPC struct {
 	Client *rpc.Client
 }
 
-func (g *CheckMessageSidelineRPC) CheckMessageSideline(key interface{}) bool {
+func (g *CheckMessageSidelineRPC) CheckMessageSideline(key interface{}) (bool, error) {
 	var resp bool
 	fmt.Println("Checking from dmux plugin")
 	err := g.Client.Call("Plugin.CheckMessageSideline", key, &resp)
@@ -27,10 +27,10 @@ func (g *CheckMessageSidelineRPC) CheckMessageSideline(key interface{}) bool {
 		panic(err)
 	}
 
-	return false
+	return false, nil
 }
 
-func (g *CheckMessageSidelineRPC) SidelineMessage(kafkaSidelineMessage interface{}) {
+func (g *CheckMessageSidelineRPC) SidelineMessage(kafkaSidelineMessage interface{}) error {
 	var resp bool
 	err := g.Client.Call("Plugin.SidelineMessage", kafkaSidelineMessage, &resp)
 	if err != nil {
@@ -38,6 +38,7 @@ func (g *CheckMessageSidelineRPC) SidelineMessage(kafkaSidelineMessage interface
 		// there isn't much other choice here.
 		panic(err)
 	}
+	return nil
 }
 
 // Here is the RPC server that CheckMessageSidelineRPC talks to, conforming to
@@ -49,7 +50,7 @@ type CheckMessageSidelineRPCServer struct {
 
 func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(args interface{}, resp *bool) error {
 	b := []byte("asd")
-	*resp = s.Impl.CheckMessageSideline(b)
+	*resp, _ = s.Impl.CheckMessageSideline(b)
 	return nil
 }
 

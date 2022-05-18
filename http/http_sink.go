@@ -153,7 +153,7 @@ func (h *HTTPSink) Consume(msg interface{}, retries int) error {
 	h.retryPre(msg, url)
 
 	//retry Execute till you succede based on retry config
-	status, err := h.retryExecute(h.conf.Method, url, headers, payload, responseCodeEvaluation, math.MaxInt32)
+	status, err := h.retryExecute(h.conf.Method, url, headers, payload, responseCodeEvaluation, retries)
 	if !status && err != nil {
 		return err
 	}
@@ -188,11 +188,9 @@ func (h *HTTPSink) retryPost(msg interface{}, state bool,
 
 func (h *HTTPSink) retryExecute(method, url string, headers map[string]string,
 	data []byte, respEval func(respCode int, nonRetriableHttpStatusCodes []int) (error, bool), retries int) (bool, error) {
-	var count int = 0
+	var count = 0
 	for {
-
 		status, respCode := h.execute(method, url, headers, bytes.NewReader(data))
-
 		if status {
 			nonRetriableHttpStatusCodes := h.conf.NonRetriableHttpStatusCodes
 			err, outcome := respEval(respCode, nonRetriableHttpStatusCodes)
@@ -200,7 +198,7 @@ func (h *HTTPSink) retryExecute(method, url string, headers map[string]string,
 				return outcome, nil
 			}
 			count = count + 1
-			if count > retries {
+			if retries != math.MaxInt32 && count > retries {
 				return outcome, errors.New("exceeded retries")
 			}
 		}
