@@ -48,9 +48,9 @@ type CheckMessageSidelineRPCServer struct {
 	Impl CheckMessageSidelineImpl
 }
 
-func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(args interface{}, resp *bool) error {
+func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(args interface{}, resp *bool, err *error) error {
 	b := []byte("asd")
-	*resp, _ = s.Impl.CheckMessageSideline(b)
+	*resp, *err = s.Impl.CheckMessageSideline(b)
 	return nil
 }
 
