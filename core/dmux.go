@@ -28,10 +28,10 @@ const (
 )
 
 type Sideline struct {
-	sideline          bool
-	retries           int
-	consumerGroupName string
-	clusterName       string
+	SidelineEnabled   bool   `json:"sideline"`
+	Retries           int    `json:"retries"`
+	ConsumerGroupName string `json:"consumerGroupName"`
+	ClusterName       string `json:"clusterName"`
 }
 
 //DmuxConf holds configuration parameters for Dmux
@@ -248,8 +248,8 @@ func shutdown(ch []chan interface{}, wg *sync.WaitGroup) {
 
 func setup(size, qsize, batchSize int, sink Sink, version int, sideline Sideline, sidelinePlugin interface{}) ([]chan interface{}, *sync.WaitGroup) {
 	if version == 1 && batchSize == 1 {
-		log.Printf("value of sideline %t", sideline.sideline)
-		if sideline.sideline {
+		log.Printf("value of sideline %t", sideline.SidelineEnabled)
+		if sideline.SidelineEnabled {
 			log.Printf("Calling simpleSetupWithSideline")
 			return simpleSetupWithSideline(size, qsize, sink, sideline, sidelinePlugin)
 		} else {
@@ -349,10 +349,10 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					kafkaSidelineMessage := plugins.KafkaSidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
 						Partition:         val.GetRawMsg().Partition,
-						EntityId:          string(val.GetRawMsg().Key) + sideline.consumerGroupName + sideline.clusterName,
+						EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
 						Offset:            val.GetRawMsg().Offset,
-						ConsumerGroupName: sideline.consumerGroupName,
-						ClusterName:       sideline.clusterName,
+						ConsumerGroupName: sideline.ConsumerGroupName,
+						ClusterName:       sideline.ClusterName,
 						Message:           val.GetRawMsg().Value,
 					}
 					for {
@@ -364,15 +364,15 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						break
 					}
 				}
-				consumeError := sk.Consume(msg, sideline.retries)
+				consumeError := sk.Consume(msg, sideline.Retries)
 				if consumeError != nil && consumeError.Error() == "exceeded retries" {
 					kafkaSidelineMessage := plugins.KafkaSidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
 						Partition:         val.GetRawMsg().Partition,
-						EntityId:          string(val.GetRawMsg().Key) + sideline.consumerGroupName + sideline.clusterName,
+						EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
 						Offset:            val.GetRawMsg().Offset,
-						ConsumerGroupName: sideline.consumerGroupName,
-						ClusterName:       sideline.clusterName,
+						ConsumerGroupName: sideline.ConsumerGroupName,
+						ClusterName:       sideline.ClusterName,
 						Message:           val.GetRawMsg().Value,
 					}
 					for {
