@@ -5,6 +5,7 @@ import (
 	"fmt"
 	source "github.com/tesrohit-developer/go-dmux/kafka"
 	"github.com/tesrohit-developer/go-dmux/plugins"
+	"log"
 	"math"
 	"sync"
 	"time"
@@ -247,12 +248,16 @@ func shutdown(ch []chan interface{}, wg *sync.WaitGroup) {
 
 func setup(size, qsize, batchSize int, sink Sink, version int, sideline Sideline, sidelinePlugin interface{}) ([]chan interface{}, *sync.WaitGroup) {
 	if version == 1 && batchSize == 1 {
+		log.Printf("value of sideline %t", sideline.sideline)
 		if sideline.sideline {
+			log.Printf("Calling simpleSetupWithSideline")
 			return simpleSetupWithSideline(size, qsize, sink, sideline, sidelinePlugin)
 		} else {
+			log.Printf("Calling simpleSetup")
 			return simpleSetup(size, qsize, sink)
 		}
 	} else {
+		log.Printf("Calling batchSetup")
 		return batchSetup(size, qsize, batchSize, sink, version)
 	}
 }
@@ -333,6 +338,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 				var check = false
 				var checkErr = errors.New("")
 				for {
+					log.Printf("Checking if the message is already sidelined %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 					check, checkErr = sidelinePlugin.(plugins.CheckMessageSidelineImpl).CheckMessageSideline(val.GetRawMsg().Key)
 					if checkErr != nil {
 						break
@@ -350,6 +356,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						Message:           val.GetRawMsg().Value,
 					}
 					for {
+						log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 						err := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(kafkaSidelineMessage)
 						if err != nil {
 							continue
@@ -369,6 +376,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						Message:           val.GetRawMsg().Value,
 					}
 					for {
+						log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 						err := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(kafkaSidelineMessage)
 						if err != nil {
 							continue
