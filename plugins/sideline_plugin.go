@@ -48,10 +48,10 @@ type CheckMessageSidelineRPCServer struct {
 	Impl CheckMessageSidelineImpl
 }
 
-func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key interface{}, resp *bool) error {
-	var err error
-	*resp, err = s.Impl.CheckMessageSideline(key)
-	return err
+func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key interface{}, resp *bool, err *error) error {
+	//var err error
+	*resp, *err = s.Impl.CheckMessageSideline(key)
+	return *err
 }
 
 func (s *CheckMessageSidelineRPCServer) SidelineMessage(args interface{}) error {
