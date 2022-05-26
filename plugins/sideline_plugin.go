@@ -27,7 +27,7 @@ func (g *CheckMessageSidelineRPC) CheckMessageSideline(key interface{}) (bool, e
 		panic(err)
 	}
 
-	return false, nil
+	return resp, nil
 }
 
 func (g *CheckMessageSidelineRPC) SidelineMessage(kafkaSidelineMessage interface{}) error {
@@ -48,15 +48,16 @@ type CheckMessageSidelineRPCServer struct {
 	Impl CheckMessageSidelineImpl
 }
 
-func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(args interface{}, resp *bool, err *error) error {
-	b := []byte("asd")
-	*resp, *err = s.Impl.CheckMessageSideline(b)
-	return nil
+func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key interface{}, resp *bool) error {
+	var err error
+	*resp, err = s.Impl.CheckMessageSideline(key)
+	return err
 }
 
-func (s *CheckMessageSidelineRPCServer) SidelineMessage(args interface{}, resp *bool) error {
-	s.Impl.SidelineMessage(args)
-	return nil
+func (s *CheckMessageSidelineRPCServer) SidelineMessage(args interface{}) error {
+	var err error
+	err = s.Impl.SidelineMessage(args)
+	return err
 }
 
 // Dummy implementation of a plugin.Plugin interface for use in PluginMap.
