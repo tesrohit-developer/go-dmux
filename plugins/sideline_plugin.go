@@ -8,7 +8,7 @@ import (
 
 // CheckMessageSidelineImpl is the interface that we're exposing as a plugin.
 type CheckMessageSidelineImpl interface {
-	CheckMessageSideline(key interface{}) (bool, error)
+	CheckMessageSideline(key []byte) (bool, error)
 	SidelineMessage(KafkaSidelineMessage interface{}) error
 }
 
@@ -44,7 +44,7 @@ type CheckMessageSidelineRPCServer struct {
 	Impl CheckMessageSidelineImpl
 }
 
-func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key interface{}, resp *bool) error {
+func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key []byte, resp *bool) error {
 	var err error
 	*resp, err = s.Impl.CheckMessageSideline(key)
 	return err
