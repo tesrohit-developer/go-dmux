@@ -22,7 +22,7 @@ func (g *CheckMessageSidelineRPC) CheckMessageSideline(key interface{}) (bool, e
 	fmt.Println("Checking from dmux plugin")
 	err := g.Client.Call("Plugin.CheckMessageSideline", key, &resp)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return false, err
 	}
 	return resp, nil

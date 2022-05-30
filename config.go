@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -44,6 +45,8 @@ func getSidelinePlugin() interface{} {
 	// Initialize sidelineImpls manager
 	err := sidelineImpls.Init()
 	if err != nil {
+		log.Println("Error in interface init")
+		fmt.Println("Error in interface init")
 		log.Fatal(err.Error())
 	}
 
@@ -51,6 +54,8 @@ func getSidelinePlugin() interface{} {
 	sidelineImpls.Launch()
 	p, err := sidelineImpls.GetInterface("em")
 	if err != nil {
+		log.Println("Error in getting interface")
+		fmt.Println("Error in getting interface")
 		log.Fatal(err.Error())
 	}
 	return p
