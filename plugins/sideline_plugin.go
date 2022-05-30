@@ -17,7 +17,7 @@ type CheckMessageSidelineRPC struct {
 	Client *rpc.Client
 }
 
-func (g *CheckMessageSidelineRPC) CheckMessageSideline(key interface{}) (bool, error) {
+func (g *CheckMessageSidelineRPC) CheckMessageSideline(key []byte) (bool, error) {
 	var resp bool
 	fmt.Println("Checking from dmux plugin")
 	err := g.Client.Call("Plugin.CheckMessageSideline", key, &resp)
