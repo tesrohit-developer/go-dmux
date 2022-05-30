@@ -22,12 +22,9 @@ func (g *CheckMessageSidelineRPC) CheckMessageSideline(key interface{}) (bool, e
 	fmt.Println("Checking from dmux plugin")
 	err := g.Client.Call("Plugin.CheckMessageSideline", key, &resp)
 	if err != nil {
-		// You usually want your interfaces to return errors. If they don't,
-		// there isn't much other choice here.
 		fmt.Println(err)
-		panic(err)
+		return false, err
 	}
-
 	return resp, nil
 }
 
@@ -35,9 +32,7 @@ func (g *CheckMessageSidelineRPC) SidelineMessage(kafkaSidelineMessage interface
 	var resp bool
 	err := g.Client.Call("Plugin.SidelineMessage", kafkaSidelineMessage, &resp)
 	if err != nil {
-		// You usually want your interfaces to return errors. If they don't,
-		// there isn't much other choice here.
-		panic(err)
+		return err
 	}
 	return nil
 }
