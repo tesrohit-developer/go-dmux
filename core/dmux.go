@@ -341,9 +341,9 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					log.Printf("Checking if the message is already sidelined %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 					check, checkErr = sidelinePlugin.(plugins.CheckMessageSidelineImpl).CheckMessageSideline(val.GetRawMsg().Key)
 					if checkErr != nil {
-						break
+						continue
 					}
-					continue
+					break
 				}
 				if check {
 					kafkaSidelineMessage := plugins.KafkaSidelineMessage{
