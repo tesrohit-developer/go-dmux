@@ -376,7 +376,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						Message:           val.GetRawMsg().Value,
 					}
 					for {
-						log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+						log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 						err := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(kafkaSidelineMessage)
 						if err != nil {
 							continue
