@@ -345,6 +345,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					}
 					break
 				}
+				log.Printf("Message if already sidelined %t %d %d", check, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 				if check {
 					kafkaSidelineMessage := plugins.KafkaSidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
