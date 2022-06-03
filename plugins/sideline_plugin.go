@@ -32,6 +32,7 @@ func (g *CheckMessageSidelineRPC) SidelineMessage(kafkaSidelineMessage interface
 	var resp bool
 	err := g.Client.Call("Plugin.SidelineMessage", kafkaSidelineMessage, &resp)
 	if err != nil {
+		fmt.Println(err.Error())
 		return err
 	}
 	return nil
