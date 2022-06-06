@@ -349,7 +349,13 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					break
 				}
 				log.Printf("Message if already sidelined %t %d %d", check, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-				if check.IsMessageSidelined {
+				if check.IsMessageSidelined || !check.IsMessageSidelined {
+					var version int32
+					if check.IsMessageSidelined {
+						version = check.Version
+					} else {
+						version = 0
+					}
 					kafkaSidelineMessage := plugins.KafkaSidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
 						Partition:         val.GetRawMsg().Partition,
@@ -358,7 +364,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						ConsumerGroupName: sideline.ConsumerGroupName,
 						ClusterName:       sideline.ClusterName,
 						Message:           val.GetRawMsg().Value,
-						Version:           check.Version,
+						Version:           version,
 					}
 					for {
 						log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
