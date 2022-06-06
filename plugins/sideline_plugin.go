@@ -9,7 +9,7 @@ import (
 // CheckMessageSidelineImpl is the interface that we're exposing as a plugin.
 type CheckMessageSidelineImpl interface {
 	CheckMessageSideline(key []byte) (bool, error)
-	SidelineMessage(KafkaSidelineMessage interface{}) error
+	SidelineMessage(msg []byte) error
 }
 
 // Here is an implementation that talks over RPC
@@ -28,9 +28,9 @@ func (g *CheckMessageSidelineRPC) CheckMessageSideline(key []byte) (bool, error)
 	return resp, nil
 }
 
-func (g *CheckMessageSidelineRPC) SidelineMessage(kafkaSidelineMessage interface{}) error {
+func (g *CheckMessageSidelineRPC) SidelineMessage(msg []byte) error {
 	var resp bool
-	err := g.Client.Call("Plugin.SidelineMessage", kafkaSidelineMessage, &resp)
+	err := g.Client.Call("Plugin.SidelineMessage", msg, &resp)
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
@@ -51,9 +51,9 @@ func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key []byte, resp *b
 	return err
 }
 
-func (s *CheckMessageSidelineRPCServer) SidelineMessage(args interface{}, err *error) error {
+func (s *CheckMessageSidelineRPCServer) SidelineMessage(msg []byte, err *error) error {
 	//var err error
-	*err = s.Impl.SidelineMessage(args)
+	*err = s.Impl.SidelineMessage(msg)
 	return *err
 }
 
