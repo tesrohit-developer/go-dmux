@@ -8,4 +8,5 @@ type KafkaSidelineMessage struct {
 	ConsumerGroupName string
 	ClusterName       string
 	Message           []byte
+	Version           int32
 }

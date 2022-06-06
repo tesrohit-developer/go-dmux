@@ -336,18 +336,20 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 			sk := sink.Clone()
 			for msg := range ch[index] {
 				val := msg.(source.KafkaMsg)
-				var check = false
+				var checkBytes []byte
+				var check plugins.CheckMessageSidelineResponse
 				var checkErr = errors.New("")
 				for {
 					log.Printf("Checking if the message is already sidelined %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-					check, checkErr = sidelinePlugin.(plugins.CheckMessageSidelineImpl).CheckMessageSideline(val.GetRawMsg().Key)
+					checkBytes, checkErr = sidelinePlugin.(plugins.CheckMessageSidelineImpl).CheckMessageSideline(val.GetRawMsg().Key)
+					json.Unmarshal(checkBytes, check)
 					if checkErr != nil {
 						continue
 					}
 					break
 				}
 				log.Printf("Message if already sidelined %t %d %d", check, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-				if check {
+				if check.IsMessageSidelined {
 					kafkaSidelineMessage := plugins.KafkaSidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
 						Partition:         val.GetRawMsg().Partition,
@@ -356,6 +358,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						ConsumerGroupName: sideline.ConsumerGroupName,
 						ClusterName:       sideline.ClusterName,
 						Message:           val.GetRawMsg().Value,
+						Version:           check.Version,
 					}
 					for {
 						log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
@@ -381,6 +384,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						ConsumerGroupName: sideline.ConsumerGroupName,
 						ClusterName:       sideline.ClusterName,
 						Message:           val.GetRawMsg().Value,
+						Version:           0,
 					}
 					for {
 						log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)

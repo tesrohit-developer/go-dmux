@@ -8,7 +8,7 @@ import (
 
 // CheckMessageSidelineImpl is the interface that we're exposing as a plugin.
 type CheckMessageSidelineImpl interface {
-	CheckMessageSideline(key []byte) (bool, error)
+	CheckMessageSideline(key []byte) ([]byte, error)
 	SidelineMessage(msg []byte) error
 }
 
@@ -17,13 +17,13 @@ type CheckMessageSidelineRPC struct {
 	Client *rpc.Client
 }
 
-func (g *CheckMessageSidelineRPC) CheckMessageSideline(key []byte) (bool, error) {
-	var resp bool
+func (g *CheckMessageSidelineRPC) CheckMessageSideline(key []byte) ([]byte, error) {
+	var resp []byte
 	fmt.Println("Checking from dmux plugin")
 	err := g.Client.Call("Plugin.CheckMessageSideline", key, &resp)
 	if err != nil {
 		fmt.Println(err.Error())
-		return false, err
+		return nil, err
 	}
 	return resp, nil
 }
@@ -45,7 +45,7 @@ type CheckMessageSidelineRPCServer struct {
 	Impl CheckMessageSidelineImpl
 }
 
-func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key []byte, resp *bool) error {
+func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key []byte, resp *[]byte) error {
 	var err error
 	*resp, err = s.Impl.CheckMessageSideline(key)
 	return err
