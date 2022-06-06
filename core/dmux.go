@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	source "github.com/tesrohit-developer/go-dmux/kafka"
@@ -358,8 +359,13 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					}
 					for {
 						log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-						err := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(kafkaSidelineMessage)
+						sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
 						if err != nil {
+							errors.New("error in serde of kafkaSidelineMessage")
+							continue
+						}
+						e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
+						if e != nil {
 							continue
 						}
 						break
@@ -378,8 +384,13 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					}
 					for {
 						log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-						err := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(kafkaSidelineMessage)
+						sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
 						if err != nil {
+							errors.New("error in serde of kafkaSidelineMessage")
+							continue
+						}
+						e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
+						if e != nil {
 							continue
 						}
 						break
