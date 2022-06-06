@@ -348,7 +348,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					}
 					break
 				}
-				log.Printf("Message if already sidelined %t %d %d", check, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+				log.Printf("Message if already sidelined %t %d %d", check.IsMessageSidelined, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 				if check.IsMessageSidelined || !check.IsMessageSidelined {
 					var version int32
 					if check.IsMessageSidelined {
