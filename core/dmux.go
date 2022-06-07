@@ -8,6 +8,7 @@ import (
 	"github.com/tesrohit-developer/go-dmux/plugins"
 	"log"
 	"math"
+	"strings"
 	"sync"
 	"time"
 )
@@ -366,15 +367,23 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						Message:           val.GetRawMsg().Value,
 						Version:           version,
 					}
+					var retryMessage = false
 					for {
 						log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 						sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
 						if err != nil {
-							errors.New("error in serde of kafkaSidelineMessage")
+							log.Printf("error in serde of kafkaSidelineMessage")
 							continue
 						}
 						e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
 						if e != nil {
+							log.Printf(e.Error())
+							if strings.Contains(e.Error(), "concurrent Modification Error") {
+								retryMessage = true
+							}
+							continue
+						}
+						if retryMessage {
 							continue
 						}
 						break
@@ -392,6 +401,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						Message:           val.GetRawMsg().Value,
 						Version:           0,
 					}
+					var retryMessage = false
 					for {
 						log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 						sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
@@ -401,6 +411,13 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						}
 						e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
 						if e != nil {
+							log.Printf(e.Error())
+							if strings.Contains(e.Error(), "concurrent Modification Error") {
+								retryMessage = true
+							}
+							continue
+						}
+						if retryMessage {
 							continue
 						}
 						break
