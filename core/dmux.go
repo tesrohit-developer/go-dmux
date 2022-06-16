@@ -341,87 +341,86 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 				var check plugins.CheckMessageSidelineResponse
 				var checkErr = errors.New("")
 				for {
+					var retryMessage = false
 					log.Printf("Checking if the message is already sidelined %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 					checkBytes, checkErr = sidelinePlugin.(plugins.CheckMessageSidelineImpl).CheckMessageSideline(val.GetRawMsg().Key)
 					json.Unmarshal(checkBytes, check)
 					if checkErr != nil {
 						continue
 					}
+
+					log.Printf("Message if already sidelined %t %d %d", check.IsMessageSidelined, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+					if check.IsMessageSidelined || !check.IsMessageSidelined {
+						var version int32
+						if check.IsMessageSidelined {
+							version = check.Version
+						} else {
+							version = 0
+						}
+						kafkaSidelineMessage := plugins.KafkaSidelineMessage{
+							GroupId:           string(val.GetRawMsg().Key),
+							Partition:         val.GetRawMsg().Partition,
+							EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
+							Offset:            val.GetRawMsg().Offset,
+							ConsumerGroupName: sideline.ConsumerGroupName,
+							ClusterName:       sideline.ClusterName,
+							Message:           val.GetRawMsg().Value,
+							Version:           version,
+						}
+						for {
+							log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+							sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
+							if err != nil {
+								log.Printf("error in serde of kafkaSidelineMessage")
+								continue
+							}
+							e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
+							if e != nil {
+								log.Printf(e.Error())
+								if strings.Contains(e.Error(), "Version Mismatch Error") {
+									retryMessage = true
+									break
+								}
+								continue
+							}
+							break
+						}
+					}
+					consumeError := sk.Consume(msg, sideline.Retries)
+					if consumeError != nil && consumeError.Error() == "exceeded retries" {
+						kafkaSidelineMessage := plugins.KafkaSidelineMessage{
+							GroupId:           string(val.GetRawMsg().Key),
+							Partition:         val.GetRawMsg().Partition,
+							EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
+							Offset:            val.GetRawMsg().Offset,
+							ConsumerGroupName: sideline.ConsumerGroupName,
+							ClusterName:       sideline.ClusterName,
+							Message:           val.GetRawMsg().Value,
+							Version:           0,
+						}
+						for {
+							log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+							sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
+							if err != nil {
+								errors.New("error in serde of kafkaSidelineMessage")
+								continue
+							}
+							e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
+							if e != nil {
+								log.Printf(e.Error())
+								if strings.Contains(e.Error(), "Version Mismatch Error") {
+									retryMessage = true
+									break
+								}
+								continue
+							}
+							break
+						}
+					}
+					if retryMessage {
+						continue
+					}
 					break
-				}
-				log.Printf("Message if already sidelined %t %d %d", check.IsMessageSidelined, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-				if check.IsMessageSidelined || !check.IsMessageSidelined {
-					var version int32
-					if check.IsMessageSidelined {
-						version = check.Version
-					} else {
-						version = 0
-					}
-					kafkaSidelineMessage := plugins.KafkaSidelineMessage{
-						GroupId:           string(val.GetRawMsg().Key),
-						Partition:         val.GetRawMsg().Partition,
-						EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
-						Offset:            val.GetRawMsg().Offset,
-						ConsumerGroupName: sideline.ConsumerGroupName,
-						ClusterName:       sideline.ClusterName,
-						Message:           val.GetRawMsg().Value,
-						Version:           version,
-					}
-					var retryMessage = false
-					for {
-						log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-						sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
-						if err != nil {
-							log.Printf("error in serde of kafkaSidelineMessage")
-							continue
-						}
-						e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
-						if e != nil {
-							log.Printf(e.Error())
-							if strings.Contains(e.Error(), "concurrent Modification Error") {
-								retryMessage = true
-							}
-							continue
-						}
-						if retryMessage {
-							continue
-						}
-						break
-					}
-				}
-				consumeError := sk.Consume(msg, sideline.Retries)
-				if consumeError != nil && consumeError.Error() == "exceeded retries" {
-					kafkaSidelineMessage := plugins.KafkaSidelineMessage{
-						GroupId:           string(val.GetRawMsg().Key),
-						Partition:         val.GetRawMsg().Partition,
-						EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
-						Offset:            val.GetRawMsg().Offset,
-						ConsumerGroupName: sideline.ConsumerGroupName,
-						ClusterName:       sideline.ClusterName,
-						Message:           val.GetRawMsg().Value,
-						Version:           0,
-					}
-					var retryMessage = false
-					for {
-						log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-						sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
-						if err != nil {
-							errors.New("error in serde of kafkaSidelineMessage")
-							continue
-						}
-						e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
-						if e != nil {
-							log.Printf(e.Error())
-							if strings.Contains(e.Error(), "concurrent Modification Error") {
-								retryMessage = true
-							}
-							continue
-						}
-						if retryMessage {
-							continue
-						}
-						break
-					}
 				}
 			}
 			wg.Done()
