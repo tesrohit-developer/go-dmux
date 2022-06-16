@@ -343,7 +343,8 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 				for {
 					var retryMessage = false
 					log.Printf("Checking if the message is already sidelined %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-					checkBytes, checkErr = sidelinePlugin.(plugins.CheckMessageSidelineImpl).CheckMessageSideline(val.GetRawMsg().Key)
+					checkBytes, checkErr = sidelinePlugin.(plugins.CheckMessageSidelineImpl).
+						CheckMessageSideline([]byte(string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName))
 					json.Unmarshal(checkBytes, check)
 					if checkErr != nil {
 						continue
