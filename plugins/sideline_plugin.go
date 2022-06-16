@@ -29,7 +29,7 @@ func (g *CheckMessageSidelineRPC) CheckMessageSideline(key []byte) ([]byte, erro
 }
 
 func (g *CheckMessageSidelineRPC) SidelineMessage(msg []byte) error {
-	var resp bool
+	var resp error
 	err := g.Client.Call("Plugin.SidelineMessage", msg, &resp)
 	if err != nil {
 		fmt.Println(err.Error())
