@@ -4,6 +4,7 @@ import (
 	gplugin "github.com/hashicorp/go-plugin"
 	"log"
 	"net/rpc"
+	"strconv"
 )
 
 type ScanImpl interface {
@@ -28,7 +29,8 @@ func (g *ScanImplRPC) ScanWithStartRowEndRow(request ScanWithStartRowEndRowReque
 
 func (g *ScanImplRPC) ScanWithStartTimeEndTime(request ScanWithStartTimeEndTimeRequest) ([]string, error) {
 	var resp []string
-	log.Printf("Calling ScanWithStartTimeEndTime start : " + request.StartTime + " end: " + request.EndTime)
+	log.Printf("Calling ScanWithStartTimeEndTime start : " + strconv.FormatInt(request.StartTime, 10) +
+		" end: " + strconv.FormatInt(request.EndTime, 10))
 	err := g.Client.Call("Plugin.ScanWithStartTimeEndTime", request, &resp)
 	if err != nil {
 		log.Fatal(err.Error())
