@@ -1,10 +1,14 @@
 package unsideline
 
 import (
+	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/tesrohit-developer/go-dmux/plugins"
 	"log"
 	"net/http"
 )
+
+var scanPlugin interface{}
 
 func getScanPlugin() interface{} {
 	s := plugins.NewManager("scan_plugin", "scan-*", "./plugins/built", &plugins.ScanImplPlugin{})
@@ -22,7 +26,18 @@ func getScanPlugin() interface{} {
 }
 
 func scan(w http.ResponseWriter, r *http.Request) {
-
+	vars := mux.Vars(r)
+	var request = plugins.ScanWithStartRowEndRowRequest{
+		StartKey: vars["startRow"],
+		EndKey:   vars["endRow"],
+	}
+	rows, err := scanPlugin.(plugins.ScanImpl).ScanWithStartRowEndRow(request)
+	if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
+	}
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(rows)
 }
 
 func unsideline(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +45,8 @@ func unsideline(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/scan", scan)
+	scanPlugin = getScanPlugin()
+	http.HandleFunc("/scan/{startRow}/{endRow}", scan)
 	http.HandleFunc("/unsideline", unsideline)
 	log.Fatal(http.ListenAndServe(":9951", nil))
 }
