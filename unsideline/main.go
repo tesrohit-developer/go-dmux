@@ -44,9 +44,14 @@ func unsideline(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func healthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(200)
+}
+
 func main() {
 	scanPlugin = getScanPlugin()
 	http.HandleFunc("/scan/{startRow}/{endRow}", scan)
 	http.HandleFunc("/unsideline", unsideline)
+	http.HandleFunc("/healthCheck", healthCheck)
 	log.Fatal(http.ListenAndServe(":9951", nil))
 }
