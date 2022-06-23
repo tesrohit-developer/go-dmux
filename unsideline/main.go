@@ -18,7 +18,7 @@ func getScanPlugin() interface{} {
 		log.Fatal(err.Error())
 	}
 	s.Launch()
-	p, err := s.GetInterface("em-scan")
+	p, err := s.GetInterface("scan-sideline-em")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
