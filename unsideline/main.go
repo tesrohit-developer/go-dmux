@@ -49,6 +49,7 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	log.Println("Hi starting the API")
 	scanPlugin = getScanPlugin()
 	http.HandleFunc("/scan/{startRow}/{endRow}", scan)
 	http.HandleFunc("/unsideline", unsideline)
