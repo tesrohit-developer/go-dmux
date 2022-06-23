@@ -11,7 +11,7 @@ import (
 var scanPlugin interface{}
 
 func getScanPlugin() interface{} {
-	s := plugins.NewManager("scan_plugin", "scan-*", "./plugins/built", &plugins.ScanImplPlugin{})
+	s := plugins.NewManager("scan_plugin", "scan-*", "", &plugins.ScanImplPlugin{})
 	//defer s.Dispose()
 	err := s.Init()
 	if err != nil {
