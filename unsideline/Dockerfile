@@ -9,6 +9,8 @@ RUN apt-get update \
 
 COPY . .
 
+WORKDIR unsideline/
+
 RUN git config --global http.sslverify false
 
 RUN go build -o bin/unsideline
