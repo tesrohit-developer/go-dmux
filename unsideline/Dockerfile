@@ -36,7 +36,8 @@ RUN groupadd -g ${GID} ${group} && \
     useradd -ms /bin/bash --create-home -g ${GID} -u ${UID} ${user} ; \
     mkdir -p /var/log/unsideline ; \
     chown -R ${user}:${group} /var/log/unsideline ; \
-    chmod 777 unsideline
+    chmod 777 unsideline; \
+    chmod +x unsideline
 
 USER ${user}
 
