@@ -1,11 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/tesrohit-developer/go-dmux/plugins"
 	"log"
+	"net/http"
 )
 
-/*var scanPlugin interface{}
+var scanPlugin interface{}
 
 func getScanPlugin() interface{} {
 	s := plugins.NewManager("scan_plugin", "scan-*", "", &plugins.ScanImplPlugin{})
@@ -43,14 +47,14 @@ func unsideline(w http.ResponseWriter, r *http.Request) {
 
 func healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
-}*/
+}
 
 func main() {
 	fmt.Println("Hi starting the API")
 	log.Println("Hi starting the API")
-	//scanPlugin = getScanPlugin()
-	/*http.HandleFunc("/scan/{startRow}/{endRow}", scan)
+	scanPlugin = getScanPlugin()
+	http.HandleFunc("/scan/{startRow}/{endRow}", scan)
 	http.HandleFunc("/unsideline", unsideline)
 	http.HandleFunc("/healthCheck", healthCheck)
-	log.Fatal(http.ListenAndServe(":9951", nil))*/
+	log.Fatal(http.ListenAndServe(":9951", nil))
 }
