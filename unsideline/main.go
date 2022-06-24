@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 )
 
@@ -45,6 +46,7 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 }*/
 
 func main() {
+	fmt.Println("Hi starting the API")
 	log.Println("Hi starting the API")
 	//scanPlugin = getScanPlugin()
 	/*http.HandleFunc("/scan/{startRow}/{endRow}", scan)
