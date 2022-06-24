@@ -1,4 +1,4 @@
-package unsideline
+package main
 
 import (
 	"encoding/json"
