@@ -32,7 +32,7 @@ RUN apt-get clean \
 
 WORKDIR /app
 
-COPY --from=build /app/bin/unsideline .
+COPY --from=build /app/unsideline/bin/unsideline .
 
 RUN groupadd -g ${GID} ${group} && \
     useradd -ms /bin/bash --create-home -g ${GID} -u ${UID} ${user} ; \
