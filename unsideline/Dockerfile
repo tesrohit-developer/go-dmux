@@ -41,4 +41,4 @@ RUN groupadd -g ${GID} ${group} && \
 
 USER ${user}
 
-ENTRYPOINT ["./unsidelin"]
+ENTRYPOINT ["./unsideline"]
