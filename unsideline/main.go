@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/tesrohit-developer/go-dmux/plugins"
 	"log"
@@ -19,7 +18,7 @@ func getScanPlugin() interface{} {
 		log.Fatal(err.Error())
 	}
 	s.Launch()
-	p, err := s.GetInterface("scan-sideline-em")
+	p, err := s.GetInterface("sideline-em")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -50,7 +49,6 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	fmt.Println("Hi starting the API")
 	log.Println("Hi starting the API")
 	scanPlugin = getScanPlugin()
 	http.HandleFunc("/scan/{startRow}/{endRow}", scan)
