@@ -25,6 +25,21 @@ func getScanPlugin() interface{} {
 	return p
 }
 
+func getUnsidelinePlugin() interface{} {
+	s := plugins.NewManager("unsideline_plugin", "scan-*", "", &plugins.UnsidelineImplPlugin{})
+	//defer s.Dispose()
+	err := s.Init()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	s.Launch()
+	p, err := s.GetInterface("unsideline-em")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	return p
+}
+
 func scan(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var request = plugins.ScanWithStartRowEndRowRequest{
@@ -41,7 +56,17 @@ func scan(w http.ResponseWriter, r *http.Request) {
 }
 
 func unsideline(w http.ResponseWriter, r *http.Request) {
-
+	vars := mux.Vars(r)
+	var request = plugins.UnsidelineByKeyRequest{
+		Key: vars["key"],
+	}
+	rows, err := scanPlugin.(plugins.UnsidelineImpl).UnsidelineByKey(request)
+	if err != nil {
+		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(err.Error())
+	}
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(rows)
 }
 
 func healthCheck(w http.ResponseWriter, r *http.Request) {
