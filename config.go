@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"github.com/tesrohit-developer/go-dmux/configs"
+	"github.com/tesrohit-developer/go-dmux/connection"
+	"github.com/tesrohit-developer/go-dmux/plugins"
 	"io/ioutil"
 	"log"
 	"os"
@@ -36,7 +38,7 @@ const (
 	}
 }
 */
-/*func getSidelinePlugin() interface{} {
+func getSidelinePlugin() interface{} {
 	sidelineImpls := plugins.NewManager("sideline_plugin",
 		"sideline-*", "", &plugins.CheckMessageSidelineImplPlugin{})
 	// defer sidelineImpls.Dispose()
@@ -53,9 +55,9 @@ const (
 		log.Fatal(err.Error())
 	}
 	return p
-}*/
+}
 
-/*//Start invokes Run of the respective connection in a go routine
+//Start invokes Run of the respective connection in a go routine
 func (c configs.ConnectionType) Start(conf interface{}, enableDebug bool) {
 	switch c {
 	case configs.KafkaHTTP:
@@ -78,7 +80,7 @@ func (c configs.ConnectionType) Start(conf interface{}, enableDebug bool) {
 
 	}
 
-}*/
+}
 
 //DMuxConfigSetting dumx obj
 type DMuxConfigSetting struct {

@@ -1,11 +1,5 @@
 package configs
 
-import (
-	"github.com/tesrohit-developer/go-dmux/connection"
-	"github.com/tesrohit-developer/go-dmux/plugins"
-	"log"
-)
-
 type ConnectionType string
 
 const (
@@ -15,7 +9,7 @@ const (
 	KafkaFoxtrot ConnectionType = "kafka_foxtrot"
 )
 
-func getSidelinePlugin() interface{} {
+/*func getSidelinePlugin() interface{} {
 	sidelineImpls := plugins.NewManager("sideline_plugin",
 		"sideline-*", "", &plugins.CheckMessageSidelineImplPlugin{})
 	// defer sidelineImpls.Dispose()
@@ -32,9 +26,9 @@ func getSidelinePlugin() interface{} {
 		log.Fatal(err.Error())
 	}
 	return p
-}
+}*/
 
-//Start invokes Run of the respective connection in a go routine
+/*//Start invokes Run of the respective connection in a go routine
 func (c ConnectionType) Start(conf interface{}, enableDebug bool) {
 	switch c {
 	case KafkaHTTP:
@@ -56,4 +50,4 @@ func (c ConnectionType) Start(conf interface{}, enableDebug bool) {
 		panic("Invalid Connection Type")
 
 	}
-}
+}*/
