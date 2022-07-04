@@ -364,6 +364,11 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						} else {
 							version = 0
 						}
+						sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
+						if sidelineMetaByteArrayErr != nil {
+							log.Printf("error in serde of SidelineMeta")
+							continue
+						}
 						kafkaSidelineMessage := plugins.KafkaSidelineMessage{
 							GroupId:           string(val.GetRawMsg().Key),
 							Partition:         val.GetRawMsg().Partition,
@@ -373,8 +378,8 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 							ClusterName:       sideline.ClusterName,
 							Message:           val.GetRawMsg().Value,
 							Version:           version,
-							ConnectionType:    string(sideline.ConnectionType),
-							SidelineMeta:      sideline.SidelineMeta,
+							ConnectionType:    sideline.ConnectionType,
+							SidelineMeta:      sidelineMetaByteArray,
 						}
 						for {
 							log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
@@ -397,6 +402,11 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					}
 					consumeError := sk.Consume(msg, sideline.Retries)
 					if consumeError != nil && consumeError.Error() == "exceeded retries" {
+						sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
+						if sidelineMetaByteArrayErr != nil {
+							log.Printf("error in serde of SidelineMeta")
+							continue
+						}
 						kafkaSidelineMessage := plugins.KafkaSidelineMessage{
 							GroupId:           string(val.GetRawMsg().Key),
 							Partition:         val.GetRawMsg().Partition,
@@ -406,8 +416,8 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 							ClusterName:       sideline.ClusterName,
 							Message:           val.GetRawMsg().Value,
 							Version:           0,
-							ConnectionType:    string(sideline.ConnectionType),
-							SidelineMeta:      sideline.SidelineMeta,
+							ConnectionType:    sideline.ConnectionType,
+							SidelineMeta:      sidelineMetaByteArray,
 						}
 						for {
 							log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)

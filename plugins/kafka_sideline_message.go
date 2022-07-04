@@ -10,5 +10,5 @@ type KafkaSidelineMessage struct {
 	Message           []byte
 	Version           int32
 	ConnectionType    string
-	SidelineMeta      interface{}
+	SidelineMeta      []byte
 }
