@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/tesrohit-developer/go-dmux/configs"
 	source "github.com/tesrohit-developer/go-dmux/kafka"
 	"github.com/tesrohit-developer/go-dmux/plugins"
 	"log"
@@ -31,12 +30,12 @@ const (
 )
 
 type Sideline struct {
-	SidelineEnabled   bool                   `json:"sideline"`
-	Retries           int                    `json:"retries"`
-	ConsumerGroupName string                 `json:"consumerGroupName"`
-	ClusterName       string                 `json:"clusterName"`
-	ConnectionType    configs.ConnectionType `json:"type"`
-	SidelineMeta      interface{}            `json:"sidelineMeta"`
+	SidelineEnabled   bool        `json:"sideline"`
+	Retries           int         `json:"retries"`
+	ConsumerGroupName string      `json:"consumerGroupName"`
+	ClusterName       string      `json:"clusterName"`
+	ConnectionType    string      `json:"type"`
+	SidelineMeta      interface{} `json:"sidelineMeta"`
 }
 
 //DmuxConf holds configuration parameters for Dmux

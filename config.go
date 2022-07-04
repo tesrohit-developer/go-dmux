@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/tesrohit-developer/go-dmux/configs"
 	"github.com/tesrohit-developer/go-dmux/connection"
 	"github.com/tesrohit-developer/go-dmux/plugins"
 	"io/ioutil"
@@ -13,14 +12,14 @@ import (
 )
 
 //ConnectionType based on this type of Connection and related forks happen
-/*type ConnectionType string
+type ConnectionType string
 
 const (
 	//KafkaHTTP key to define kafka to generic http sink
 	KafkaHTTP ConnectionType = "kafka_http"
 	//KafkaFoxtrot key to define kafka to foxtrot http sink
 	KafkaFoxtrot ConnectionType = "kafka_foxtrot"
-)*/
+)
 
 /*func (c configs.ConnectionType) getConfig(data []byte) interface{} {
 	switch c {
@@ -58,22 +57,22 @@ func getSidelinePlugin() interface{} {
 }
 
 //Start invokes Run of the respective connection in a go routine
-func (c configs.ConnectionType) Start(conf interface{}, enableDebug bool) {
+func (c ConnectionType) Start(conf interface{}, enableDebug bool) {
 	switch c {
-	case configs.KafkaHTTP:
+	case KafkaHTTP:
 		connObj := &connection.KafkaHTTPConn{
 			EnableDebugLog: enableDebug,
 			Conf:           conf,
 			SidelinePlugin: getSidelinePlugin(),
 		}
-		log.Println("Starting ", configs.KafkaHTTP)
+		log.Println("Starting ", KafkaHTTP)
 		connObj.Run()
-	case configs.KafkaFoxtrot:
+	case KafkaFoxtrot:
 		connObj := &connection.KafkaFoxtrotConn{
 			EnableDebugLog: enableDebug,
 			Conf:           conf,
 		}
-		log.Println("Starting ", configs.KafkaFoxtrot)
+		log.Println("Starting ", KafkaFoxtrot)
 		connObj.Run()
 	default:
 		panic("Invalid Connection Type")
@@ -97,10 +96,10 @@ type DmuxConf struct {
 
 //DmuxItem struct defines name and type of connection
 type DmuxItem struct {
-	Name       string                 `json:"name"`
-	Disabled   bool                   `json:"disabled`
-	ConnType   configs.ConnectionType `json:"connectionType"`
-	Connection interface{}            `json:connection`
+	Name       string         `json:"name"`
+	Disabled   bool           `json:"disabled`
+	ConnType   ConnectionType `json:"connectionType"`
+	Connection interface{}    `json:connection`
 }
 
 //GetDmuxConf parses config file and return DmuxConf
