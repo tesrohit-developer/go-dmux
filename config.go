@@ -2,32 +2,31 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/tesrohit-developer/go-dmux/configs"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"github.com/tesrohit-developer/go-dmux/connection"
 	"github.com/tesrohit-developer/go-dmux/logging"
-	"github.com/tesrohit-developer/go-dmux/plugins"
 )
 
 //ConnectionType based on this type of Connection and related forks happen
-type ConnectionType string
+/*type ConnectionType string
 
 const (
 	//KafkaHTTP key to define kafka to generic http sink
 	KafkaHTTP ConnectionType = "kafka_http"
 	//KafkaFoxtrot key to define kafka to foxtrot http sink
 	KafkaFoxtrot ConnectionType = "kafka_foxtrot"
-)
+)*/
 
-func (c ConnectionType) getConfig(data []byte) interface{} {
+/*func (c configs.ConnectionType) getConfig(data []byte) interface{} {
 	switch c {
-	case KafkaHTTP:
+	case configs.KafkaHTTP:
 		var connConf []*connection.KafkaHTTPConnConfig
 		json.Unmarshal(data, &connConf)
 		return connConf[0]
-	case KafkaFoxtrot:
+	case configs.KafkaFoxtrot:
 		var connConf []*connection.KafkaFoxtrotConnConfig
 		json.Unmarshal(data, &connConf)
 		return connConf[0]
@@ -36,8 +35,8 @@ func (c ConnectionType) getConfig(data []byte) interface{} {
 
 	}
 }
-
-func getSidelinePlugin() interface{} {
+*/
+/*func getSidelinePlugin() interface{} {
 	sidelineImpls := plugins.NewManager("sideline_plugin",
 		"sideline-*", "", &plugins.CheckMessageSidelineImplPlugin{})
 	// defer sidelineImpls.Dispose()
@@ -54,32 +53,32 @@ func getSidelinePlugin() interface{} {
 		log.Fatal(err.Error())
 	}
 	return p
-}
+}*/
 
-//Start invokes Run of the respective connection in a go routine
-func (c ConnectionType) Start(conf interface{}, enableDebug bool) {
+/*//Start invokes Run of the respective connection in a go routine
+func (c configs.ConnectionType) Start(conf interface{}, enableDebug bool) {
 	switch c {
-	case KafkaHTTP:
+	case configs.KafkaHTTP:
 		connObj := &connection.KafkaHTTPConn{
 			EnableDebugLog: enableDebug,
 			Conf:           conf,
 			SidelinePlugin: getSidelinePlugin(),
 		}
-		log.Println("Starting ", KafkaHTTP)
+		log.Println("Starting ", configs.KafkaHTTP)
 		connObj.Run()
-	case KafkaFoxtrot:
+	case configs.KafkaFoxtrot:
 		connObj := &connection.KafkaFoxtrotConn{
 			EnableDebugLog: enableDebug,
 			Conf:           conf,
 		}
-		log.Println("Starting ", KafkaFoxtrot)
+		log.Println("Starting ", configs.KafkaFoxtrot)
 		connObj.Run()
 	default:
 		panic("Invalid Connection Type")
 
 	}
 
-}
+}*/
 
 //DMuxConfigSetting dumx obj
 type DMuxConfigSetting struct {
@@ -96,10 +95,10 @@ type DmuxConf struct {
 
 //DmuxItem struct defines name and type of connection
 type DmuxItem struct {
-	Name       string         `json:"name"`
-	Disabled   bool           `json:"disabled`
-	ConnType   ConnectionType `json:"connectionType"`
-	Connection interface{}    `json:connection`
+	Name       string                 `json:"name"`
+	Disabled   bool                   `json:"disabled`
+	ConnType   configs.ConnectionType `json:"connectionType"`
+	Connection interface{}            `json:connection`
 }
 
 //GetDmuxConf parses config file and return DmuxConf

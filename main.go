@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/tesrohit-developer/go-dmux/configs"
 	"log"
 	"os"
 
@@ -35,7 +36,7 @@ func main() {
 	log.Printf("config: %v", conf)
 
 	for _, item := range conf.DMuxItems {
-		go func(connType ConnectionType, connConf interface{}, logDebug bool) {
+		go func(connType configs.ConnectionType, connConf interface{}, logDebug bool) {
 			connType.Start(connConf, logDebug)
 		}(item.ConnType, item.Connection, dmuxLogging.EnableDebug)
 	}

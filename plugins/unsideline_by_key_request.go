@@ -1,5 +1,6 @@
 package plugins
 
 type UnsidelineByKeyRequest struct {
-	Key string
+	Key      string
+	DmuxItem string
 }

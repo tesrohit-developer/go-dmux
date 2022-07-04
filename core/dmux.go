@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/tesrohit-developer/go-dmux/configs"
 	source "github.com/tesrohit-developer/go-dmux/kafka"
 	"github.com/tesrohit-developer/go-dmux/plugins"
 	"log"
@@ -30,10 +31,12 @@ const (
 )
 
 type Sideline struct {
-	SidelineEnabled   bool   `json:"sideline"`
-	Retries           int    `json:"retries"`
-	ConsumerGroupName string `json:"consumerGroupName"`
-	ClusterName       string `json:"clusterName"`
+	SidelineEnabled   bool                   `json:"sideline"`
+	Retries           int                    `json:"retries"`
+	ConsumerGroupName string                 `json:"consumerGroupName"`
+	ClusterName       string                 `json:"clusterName"`
+	ConnectionType    configs.ConnectionType `json:"type"`
+	SidelineMeta      interface{}            `json:"sidelineMeta"`
 }
 
 //DmuxConf holds configuration parameters for Dmux
@@ -371,6 +374,8 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 							ClusterName:       sideline.ClusterName,
 							Message:           val.GetRawMsg().Value,
 							Version:           version,
+							ConnectionType:    string(sideline.ConnectionType),
+							SidelineMeta:      sideline.SidelineMeta,
 						}
 						for {
 							log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
@@ -402,6 +407,8 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 							ClusterName:       sideline.ClusterName,
 							Message:           val.GetRawMsg().Value,
 							Version:           0,
+							ConnectionType:    string(sideline.ConnectionType),
+							SidelineMeta:      sideline.SidelineMeta,
 						}
 						for {
 							log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)

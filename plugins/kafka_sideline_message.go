@@ -9,4 +9,6 @@ type KafkaSidelineMessage struct {
 	ClusterName       string
 	Message           []byte
 	Version           int32
+	ConnectionType    string
+	SidelineMeta      interface{}
 }
