@@ -9,6 +9,7 @@ import (
 )
 
 var scanPlugin interface{}
+var unsidelinePlugin interface{}
 
 func getScanPlugin() interface{} {
 	s := plugins.NewManager("scan_plugin", "scan-*", "", &plugins.ScanImplPlugin{})
@@ -26,14 +27,14 @@ func getScanPlugin() interface{} {
 }
 
 func getUnsidelinePlugin() interface{} {
-	s := plugins.NewManager("unsideline_plugin", "scan-*", "", &plugins.UnsidelineImplPlugin{})
+	s := plugins.NewManager("unsideline_plugin", "unsideline-*", "", &plugins.UnsidelineImplPlugin{})
 	//defer s.Dispose()
 	err := s.Init()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	s.Launch()
-	p, err := s.GetInterface("unsideline-em")
+	p, err := s.GetInterface("em")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -60,7 +61,7 @@ func unsideline(w http.ResponseWriter, r *http.Request) {
 	var request = plugins.UnsidelineByKeyRequest{
 		Key: vars["key"],
 	}
-	rows, err := scanPlugin.(plugins.UnsidelineImpl).UnsidelineByKey(request)
+	rows, err := unsidelinePlugin.(plugins.UnsidelineImpl).UnsidelineByKey(request)
 	if err != nil {
 		w.WriteHeader(500)
 		json.NewEncoder(w).Encode(err.Error())
@@ -76,9 +77,10 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 func main() {
 	log.Println("Hi starting the API")
 	scanPlugin = getScanPlugin()
+	unsidelinePlugin = getUnsidelinePlugin()
 	r := mux.NewRouter()
 	r.HandleFunc("/scan/{startRow}/{endRow}", scan)
-	r.HandleFunc("/unsideline", unsideline)
+	r.HandleFunc("/unsideline/{key}", unsideline)
 	r.HandleFunc("/healthCheck", healthCheck)
 	log.Fatal(http.ListenAndServe(":9951", r))
 }
