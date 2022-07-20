@@ -3,7 +3,6 @@ package plugins
 import (
 	"fmt"
 	gplugin "github.com/hashicorp/go-plugin"
-	"log"
 	"net/rpc"
 )
 
@@ -20,7 +19,7 @@ func (g *UnsidelineImplRPC) UnsidelineByKey(request UnsidelineByKeyRequest) (str
 	fmt.Println("Calling UnsidelineByKey start : " + request.Key)
 	err := g.Client.Call("Plugin.UnsidelineByKey", request, &resp)
 	if err != nil {
-		log.Fatal(err.Error())
+		//log.Fatal(err.Error())
 		return "", err
 	}
 	return resp, nil
