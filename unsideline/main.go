@@ -65,7 +65,8 @@ func unsideline(w http.ResponseWriter, r *http.Request) {
 	rows, err := unsidelinePlugin.(plugins.UnsidelineImpl).UnsidelineByKey(request)
 	if err != nil {
 		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(err.Error())
+		w.Write([]byte(err.Error()))
+		w.Header().Set("Content-Type", "application/json")
 		return
 	}
 	w.WriteHeader(200)
