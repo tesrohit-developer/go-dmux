@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/tesrohit-developer/go-dmux/logging"
+	"github.com/go-dmux/logging"
 )
 
 //

@@ -2,13 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/tesrohit-developer/go-dmux/connection"
-	"github.com/tesrohit-developer/go-dmux/plugins"
+	"github.com/go-dmux/connection"
+	"github.com/go-dmux/plugins"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"github.com/tesrohit-developer/go-dmux/logging"
+	"github.com/go-dmux/logging"
 )
 
 //ConnectionType based on this type of Connection and related forks happen
@@ -102,8 +102,8 @@ type DmuxConf struct {
 	Name      string     `json:"name"`
 	DMuxItems []DmuxItem `json:"dmuxItems"`
 	// DMuxMap    map[string]KafkaHTTPConnConfig `json:"dmuxMap"`
-	MetricPort int	     `json:"metric_port"`
-	Logging logging.LogConf `json:"logging"`
+	MetricPort int             `json:"metric_port"`
+	Logging    logging.LogConf `json:"logging"`
 }
 
 //DmuxItem struct defines name and type of connection

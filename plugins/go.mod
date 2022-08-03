@@ -1,4 +1,4 @@
-module github.com/tesrohit-developer/go-dmux/plugins
+module github.com/go-dmux/plugins
 
 go 1.12
 

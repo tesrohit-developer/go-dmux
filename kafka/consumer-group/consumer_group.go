@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/tesrohit-developer/go-dmux/kafka/kazoo-go"
+	"github.com/go-dmux/kafka/kazoo-go"
 )
 
 var (
