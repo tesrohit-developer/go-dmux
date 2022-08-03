@@ -21,25 +21,27 @@ const (
 	KafkaFoxtrot ConnectionType = "kafka_foxtrot"
 )
 
-/*func (c configs.ConnectionType) getConfig(data []byte) interface{} {
-	switch c {
-	case configs.KafkaHTTP:
-		var connConf []*connection.KafkaHTTPConnConfig
-		json.Unmarshal(data, &connConf)
-		return connConf[0]
-	case configs.KafkaFoxtrot:
-		var connConf []*connection.KafkaFoxtrotConnConfig
-		json.Unmarshal(data, &connConf)
-		return connConf[0]
-	default:
-		panic("Invalid Connection Type")
-
-	}
+type SidelinePluginConfig struct {
+	SidelinePluginConfigDetails SidelinePluginConfigDetails `json:"sidelinePluginConfig"`
 }
-*/
-func getSidelinePlugin() interface{} {
+
+type SidelinePluginConfigDetails struct {
+	Prefix string `json:"prefix"`
+	Id     string `json:"id"`
+	Path   string `json:"path"`
+}
+
+func getSidelinePlugin(conf interface{}) interface{} {
+	data, _ := json.Marshal(conf)
+	var sidelinePluginConfig *SidelinePluginConfig
+	sidelinePluginConfigErr := json.Unmarshal(data, &sidelinePluginConfig)
+	if sidelinePluginConfigErr != nil {
+		log.Fatal("Error in initialising sidelinePluginConfig")
+	}
 	sidelineImpls := plugins.NewManager("sideline_plugin",
-		"sideline-*", "", &plugins.CheckMessageSidelineImplPlugin{})
+		sidelinePluginConfig.SidelinePluginConfigDetails.Prefix,
+		sidelinePluginConfig.SidelinePluginConfigDetails.Path,
+		&plugins.CheckMessageSidelineImplPlugin{})
 	// defer sidelineImpls.Dispose()
 	// Initialize sidelineImpls manager
 	err := sidelineImpls.Init()
@@ -47,9 +49,9 @@ func getSidelinePlugin() interface{} {
 		log.Fatal(err.Error())
 	}
 
-	// Launch all greeters binaries
+	// Launch all sidelineImpls binaries
 	sidelineImpls.Launch()
-	p, err := sidelineImpls.GetInterface("em")
+	p, err := sidelineImpls.GetInterface(sidelinePluginConfig.SidelinePluginConfigDetails.Id)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -57,16 +59,25 @@ func getSidelinePlugin() interface{} {
 }
 
 //Start invokes Run of the respective connection in a go routine
-func (c ConnectionType) Start(conf interface{}, enableDebug bool) {
+func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineEnabled bool) {
 	switch c {
 	case KafkaHTTP:
-		connObj := &connection.KafkaHTTPConn{
-			EnableDebugLog: enableDebug,
-			Conf:           conf,
-			SidelinePlugin: getSidelinePlugin(),
+		if sidelineEnabled {
+			connObj := &connection.KafkaHTTPConn{
+				EnableDebugLog: enableDebug,
+				Conf:           conf,
+				SidelinePlugin: getSidelinePlugin(conf),
+			}
+			log.Println("Starting With Sideline ", KafkaHTTP)
+			connObj.Run()
+		} else {
+			connObj := &connection.KafkaHTTPConn{
+				EnableDebugLog: enableDebug,
+				Conf:           conf,
+			}
+			log.Println("Starting Without Sideline ", KafkaHTTP)
+			connObj.Run()
 		}
-		log.Println("Starting ", KafkaHTTP)
-		connObj.Run()
 	case KafkaFoxtrot:
 		connObj := &connection.KafkaFoxtrotConn{
 			EnableDebugLog: enableDebug,
@@ -96,10 +107,11 @@ type DmuxConf struct {
 
 //DmuxItem struct defines name and type of connection
 type DmuxItem struct {
-	Name       string         `json:"name"`
-	Disabled   bool           `json:"disabled`
-	ConnType   ConnectionType `json:"connectionType"`
-	Connection interface{}    `json:connection`
+	Name            string         `json:"name"`
+	Disabled        bool           `json:"disabled`
+	ConnType        ConnectionType `json:"connectionType"`
+	Connection      interface{}    `json:connection`
+	SidelineEnabled bool           `json:"sidelineEnabled"`
 }
 
 //GetDmuxConf parses config file and return DmuxConf

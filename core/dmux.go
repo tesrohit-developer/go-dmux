@@ -30,7 +30,6 @@ const (
 )
 
 type Sideline struct {
-	SidelineEnabled   bool        `json:"sideline"`
 	Retries           int         `json:"retries"`
 	ConsumerGroupName string      `json:"consumerGroupName"`
 	ClusterName       string      `json:"clusterName"`
@@ -252,8 +251,7 @@ func shutdown(ch []chan interface{}, wg *sync.WaitGroup) {
 
 func setup(size, qsize, batchSize int, sink Sink, version int, sideline Sideline, sidelinePlugin interface{}) ([]chan interface{}, *sync.WaitGroup) {
 	if version == 1 && batchSize == 1 {
-		log.Printf("value of sideline %t", sideline.SidelineEnabled)
-		if sideline.SidelineEnabled {
+		if sidelinePlugin != nil {
 			log.Printf("Calling simpleSetupWithSideline")
 			return simpleSetupWithSideline(size, qsize, sink, sideline, sidelinePlugin)
 		} else {
