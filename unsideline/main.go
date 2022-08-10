@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/go-dmux/plugins"
+	"github.com/flipkart-incubator/go-dmux/plugins"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
