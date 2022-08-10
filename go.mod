@@ -2,6 +2,10 @@ module github.com/flipkart-incubator/go-dmux
 
 go 1.12
 
+replace (
+	github.com/flipkart-incubator/go-dmux/plugins => github.com/tesrohit-developer/go-dmux/plugins latest
+)
+
 require (
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/Shopify/sarama v1.20.1
