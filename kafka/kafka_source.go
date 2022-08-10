@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
-	"github.com/go-dmux/kafka/consumer-group"
-	"github.com/go-dmux/kafka/kazoo-go"
+	"github.com/flipkart-incubator/go-dmux/kafka/consumer-group"
+	"github.com/flipkart-incubator/go-dmux/kafka/kazoo-go"
 )
 
 //KafkaSourceHook to track messages coming out of the source in order

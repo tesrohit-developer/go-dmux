@@ -2,13 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/go-dmux/connection"
-	"github.com/go-dmux/plugins"
+	"github.com/flipkart-incubator/go-dmux/plugins"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"github.com/go-dmux/logging"
+	"github.com/flipkart-incubator/go-dmux/connection"
+	"github.com/flipkart-incubator/go-dmux/logging"
 )
 
 //ConnectionType based on this type of Connection and related forks happen
