@@ -1,5 +1,11 @@
 package main
 
+import "log"
+
+func main() {
+	log.Println("Hi starting the API")
+}
+
 //
 //import (
 //	"encoding/json"
