@@ -80,10 +80,11 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	log.Println("Hi starting the API")
+	scanPlugin = getScanPlugin()
 	unsidelinePlugin = getUnsidelinePlugin()
 	r := mux.NewRouter()
 	r.HandleFunc("/scan/{startRow}/{endRow}", scan)
 	r.HandleFunc("/unsideline/{key}", unsideline)
 	r.HandleFunc("/healthCheck", healthCheck)
-	log.Fatal(http.ListenAndServe(":9951", r))
+	//log.Fatal(http.ListenAndServe(":9951", r))
 }
