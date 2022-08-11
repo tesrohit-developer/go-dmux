@@ -1,18 +1,11 @@
 package plugins
 
-import (
-	gplugin "github.com/hashicorp/go-plugin"
-	"log"
-	"net/rpc"
-	"strconv"
-)
-
 type ScanImpl interface {
 	ScanWithStartRowEndRow(request ScanWithStartRowEndRowRequest) ([]string, error)
 	ScanWithStartTimeEndTime(request ScanWithStartTimeEndTimeRequest) ([]string, error)
 }
 
-type ScanImplRPC struct {
+/*type ScanImplRPC struct {
 	Client *rpc.Client
 }
 
@@ -63,4 +56,4 @@ func (ScanImplPlugin) Server(*gplugin.MuxBroker) (interface{}, error) {
 
 func (ScanImplPlugin) Client(b *gplugin.MuxBroker, c *rpc.Client) (interface{}, error) {
 	return &ScanImplRPC{Client: c}, nil
-}
+}*/

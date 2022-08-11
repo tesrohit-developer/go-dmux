@@ -1,17 +1,10 @@
 package plugins
 
-import (
-	"fmt"
-	gplugin "github.com/hashicorp/go-plugin"
-	"log"
-	"net/rpc"
-)
-
 type UnsidelineImpl interface {
 	UnsidelineByKey(request UnsidelineByKeyRequest) (string, error)
 }
 
-type UnsidelineImplRPC struct {
+/*type UnsidelineImplRPC struct {
 	Client *rpc.Client
 }
 
@@ -44,4 +37,4 @@ func (UnsidelineImplPlugin) Server(*gplugin.MuxBroker) (interface{}, error) {
 
 func (UnsidelineImplPlugin) Client(b *gplugin.MuxBroker, c *rpc.Client) (interface{}, error) {
 	return &UnsidelineImplRPC{Client: c}, nil
-}
+}*/
