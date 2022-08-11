@@ -1,6 +1,6 @@
 module github.com/flipkart-incubator/go-dmux
 
-go 1.12
+go 1.17
 
 replace github.com/flipkart-incubator/go-dmux/plugins => github.com/tesrohit-developer/go-dmux/plugins v0.0.0-20220810091230-904cc4cecf58
 
