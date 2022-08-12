@@ -27,5 +27,5 @@ require (
 	github.com/wvanbergen/kazoo-go v0.0.0-20180202103751-f72d8611297a
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0-20170531160350-a96e63847dc3
-	golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135 // indirect
+	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 )
