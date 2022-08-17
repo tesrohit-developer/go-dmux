@@ -1,8 +1,8 @@
 module github.com/flipkart-incubator/go-dmux
 
-go 1.17
+go 1.12
 
-replace github.com/flipkart-incubator/go-dmux/plugins => github.com/tesrohit-developer/go-dmux/plugins v0.0.0-20220810091230-904cc4cecf58
+replace github.com/flipkart-incubator/go-dmux/plugins => github.com/tesrohit-developer/go-dmux/plugins
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
