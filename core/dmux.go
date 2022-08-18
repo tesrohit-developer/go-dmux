@@ -383,6 +383,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 							}
 							sidelineMessageResponse := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
 							if !sidelineMessageResponse.Success {
+								log.Printf(sidelineMessageResponse.ErrorMessage)
 								if sidelineMessageResponse.ConcurrentModificationError {
 									retryMessage = true
 									break
@@ -424,6 +425,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 								}
 								sidelineMessageResponse := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
 								if !sidelineMessageResponse.Success {
+									log.Printf(sidelineMessageResponse.ErrorMessage)
 									if sidelineMessageResponse.ConcurrentModificationError {
 										retryMessage = true
 										break
