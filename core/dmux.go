@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	source "github.com/flipkart-incubator/go-dmux/kafka"
-	"github.com/tesrohit-developer/go-dmux/plugins"
+	"github.com/flipkart-incubator/go-dmux/plugins"
 	"log"
 	"math"
 	"sync"
