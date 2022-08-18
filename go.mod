@@ -2,7 +2,7 @@ module github.com/flipkart-incubator/go-dmux
 
 go 1.12
 
-replace github.com/flipkart-incubator/go-dmux/plugins => github.com/tesrohit-developer/go-dmux/plugins v0.0.0-20220818132735-d178a07ccae5
+replace github.com/flipkart-incubator/go-dmux/plugins => github.com/tesrohit-developer/go-dmux/plugins v0.0.0-20220818134212-ed73e8cf1543
 //replace github.com/flipkart-incubator/go-dmux => github.com/tesrohit-developer/go-dmux
 
 require (
