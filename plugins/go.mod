@@ -1,4 +1,4 @@
-module github.com/flipkart-incubator/go-dmux/plugins
+module github.com/tesrohit-developer/go-dmux/plugins
 
 go 1.12
 
