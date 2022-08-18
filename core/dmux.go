@@ -5,10 +5,9 @@ import (
 	"errors"
 	"fmt"
 	source "github.com/flipkart-incubator/go-dmux/kafka"
-	"github.com/tesrohit-developer/go-dmux/plugins"
+	"github.com/flipkart-incubator/go-dmux/plugins"
 	"log"
 	"math"
-	"strings"
 	"sync"
 	"time"
 )
@@ -363,7 +362,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 							log.Printf("error in serde of SidelineMeta")
 							continue
 						}
-						kafkaSidelineMessage := plugins.KafkaSidelineMessage{
+						kafkaSidelineMessage := plugins.SidelineMessage{
 							GroupId:           string(val.GetRawMsg().Key),
 							Partition:         val.GetRawMsg().Partition,
 							EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
@@ -382,10 +381,9 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 								log.Printf("error in serde of kafkaSidelineMessage")
 								continue
 							}
-							e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
-							if e != nil {
-								log.Printf(e.Error())
-								if strings.Contains(e.Error(), "Version Mismatch Error") {
+							sidelineMessageResponse := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
+							if !sidelineMessageResponse.Success {
+								if sidelineMessageResponse.ConcurrentModificationError {
 									retryMessage = true
 									break
 								}
@@ -405,7 +403,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 								log.Printf("error in serde of SidelineMeta")
 								continue
 							}
-							kafkaSidelineMessage := plugins.KafkaSidelineMessage{
+							kafkaSidelineMessage := plugins.SidelineMessage{
 								GroupId:           string(val.GetRawMsg().Key),
 								Partition:         val.GetRawMsg().Partition,
 								EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
@@ -424,10 +422,9 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 									errors.New("error in serde of kafkaSidelineMessage")
 									continue
 								}
-								e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
-								if e != nil {
-									log.Printf(e.Error())
-									if strings.Contains(e.Error(), "Version Mismatch Error") {
+								sidelineMessageResponse := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
+								if !sidelineMessageResponse.Success {
+									if sidelineMessageResponse.ConcurrentModificationError {
 										retryMessage = true
 										break
 									}

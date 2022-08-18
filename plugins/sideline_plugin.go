@@ -9,7 +9,7 @@ import (
 // CheckMessageSidelineImpl is the interface that we're exposing as a plugin.
 type CheckMessageSidelineImpl interface {
 	CheckMessageSideline(key []byte) ([]byte, error)
-	SidelineMessage(msg []byte) error
+	SidelineMessage(msg []byte) SidelineMessageResponse
 }
 
 // Here is an implementation that talks over RPC
@@ -28,14 +28,15 @@ func (g *CheckMessageSidelineRPC) CheckMessageSideline(key []byte) ([]byte, erro
 	return resp, nil
 }
 
-func (g *CheckMessageSidelineRPC) SidelineMessage(msg []byte) error {
-	var resp error
+func (g *CheckMessageSidelineRPC) SidelineMessage(msg []byte) SidelineMessageResponse {
+	var resp SidelineMessageResponse
 	err := g.Client.Call("Plugin.SidelineMessage", msg, &resp)
 	if err != nil {
 		fmt.Println(err.Error())
-		return err
+		sidelineMessageResponse := SidelineMessageResponse{UnknownError: true}
+		return sidelineMessageResponse
 	}
-	return nil
+	return resp
 }
 
 // Here is the RPC server that CheckMessageSidelineRPC talks to, conforming to
@@ -51,10 +52,9 @@ func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key []byte, resp *[
 	return err
 }
 
-func (s *CheckMessageSidelineRPCServer) SidelineMessage(msg []byte, err *error) error {
-	//var err error
-	*err = s.Impl.SidelineMessage(msg)
-	return *err
+func (s *CheckMessageSidelineRPCServer) SidelineMessage(msg []byte, sidelineMessageResponse *SidelineMessageResponse) SidelineMessageResponse {
+	*sidelineMessageResponse = s.Impl.SidelineMessage(msg)
+	return *sidelineMessageResponse
 }
 
 // Dummy implementation of a plugin.Plugin interface for use in PluginMap.
