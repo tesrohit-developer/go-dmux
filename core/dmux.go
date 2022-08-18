@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	source "github.com/flipkart-incubator/go-dmux/kafka"
-	"github.com/flipkart-incubator/go-dmux/plugins"
+	"github.com/tesrohit-developer/go-dmux/plugins"
 	"log"
 	"math"
 	"strings"
@@ -355,13 +355,9 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					}
 
 					log.Printf("Message if already sidelined %t %d %d", check.IsMessageSidelined, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-					if check.IsMessageSidelined || !check.IsMessageSidelined {
+					if check.IsMessageSidelined {
 						var version int32
-						if check.IsMessageSidelined {
-							version = check.Version
-						} else {
-							version = 0
-						}
+						version = check.Version
 						sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
 						if sidelineMetaByteArrayErr != nil {
 							log.Printf("error in serde of SidelineMeta")
@@ -397,49 +393,54 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 							}
 							break
 						}
-					}
-					consumeError := sk.Consume(msg, sideline.Retries)
-					if consumeError != nil && consumeError.Error() == "exceeded retries" {
-						sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
-						if sidelineMetaByteArrayErr != nil {
-							log.Printf("error in serde of SidelineMeta")
+						if retryMessage {
 							continue
 						}
-						kafkaSidelineMessage := plugins.KafkaSidelineMessage{
-							GroupId:           string(val.GetRawMsg().Key),
-							Partition:         val.GetRawMsg().Partition,
-							EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
-							Offset:            val.GetRawMsg().Offset,
-							ConsumerGroupName: sideline.ConsumerGroupName,
-							ClusterName:       sideline.ClusterName,
-							Message:           val.GetRawMsg().Value,
-							Version:           0,
-							ConnectionType:    sideline.ConnectionType,
-							SidelineMeta:      sidelineMetaByteArray,
-						}
-						for {
-							log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-							sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
-							if err != nil {
-								errors.New("error in serde of kafkaSidelineMessage")
+						break
+					} else {
+						consumeError := sk.Consume(msg, sideline.Retries)
+						if consumeError != nil && consumeError.Error() == "exceeded retries" {
+							sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
+							if sidelineMetaByteArrayErr != nil {
+								log.Printf("error in serde of SidelineMeta")
 								continue
 							}
-							e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
-							if e != nil {
-								log.Printf(e.Error())
-								if strings.Contains(e.Error(), "Version Mismatch Error") {
-									retryMessage = true
-									break
+							kafkaSidelineMessage := plugins.KafkaSidelineMessage{
+								GroupId:           string(val.GetRawMsg().Key),
+								Partition:         val.GetRawMsg().Partition,
+								EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
+								Offset:            val.GetRawMsg().Offset,
+								ConsumerGroupName: sideline.ConsumerGroupName,
+								ClusterName:       sideline.ClusterName,
+								Message:           val.GetRawMsg().Value,
+								Version:           0,
+								ConnectionType:    sideline.ConnectionType,
+								SidelineMeta:      sidelineMetaByteArray,
+							}
+							for {
+								log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+								sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
+								if err != nil {
+									errors.New("error in serde of kafkaSidelineMessage")
+									continue
 								}
-								continue
+								e := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
+								if e != nil {
+									log.Printf(e.Error())
+									if strings.Contains(e.Error(), "Version Mismatch Error") {
+										retryMessage = true
+										break
+									}
+									continue
+								}
+								break
 							}
-							break
 						}
+						if retryMessage {
+							continue
+						}
+						break
 					}
-					if retryMessage {
-						continue
-					}
-					break
 				}
 			}
 			wg.Done()
