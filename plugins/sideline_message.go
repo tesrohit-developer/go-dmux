@@ -1,6 +1,6 @@
 package plugins
 
-type KafkaSidelineMessage struct {
+type SidelineMessage struct {
 	GroupId           string
 	Partition         int32
 	EntityId          string

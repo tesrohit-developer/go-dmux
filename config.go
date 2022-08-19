@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/flipkart-incubator/go-dmux/plugins"
+	"github.com/tesrohit-developer/go-dmux/plugins"
 	"io/ioutil"
 	"log"
 	"os"
