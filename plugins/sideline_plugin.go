@@ -1,5 +1,11 @@
 package plugins
 
+import (
+	"fmt"
+	gplugin "github.com/hashicorp/go-plugin"
+	"net/rpc"
+)
+
 // CheckMessageSidelineImpl is the interface that we're exposing as a plugin.
 type CheckMessageSidelineImpl interface {
 	CheckMessageSideline(key []byte) ([]byte, error)
@@ -7,7 +13,7 @@ type CheckMessageSidelineImpl interface {
 }
 
 // Here is an implementation that talks over RPC
-/*type CheckMessageSidelineRPC struct {
+type CheckMessageSidelineRPC struct {
 	Client *rpc.Client
 }
 
@@ -64,4 +70,4 @@ func (CheckMessageSidelineImplPlugin) Server(*gplugin.MuxBroker) (interface{}, e
 func (CheckMessageSidelineImplPlugin) Client(b *gplugin.MuxBroker, c *rpc.Client) (interface{}, error) {
 	return &CheckMessageSidelineRPC{Client: c}, nil
 	//return interface{}, nil
-}*/
+}
