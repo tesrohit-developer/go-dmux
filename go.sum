@@ -260,6 +260,8 @@ github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJy
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/tesrohit-developer/go-dmux/plugins v0.0.0-20220818062810-5e555abc320b h1:BwNPlZyBO/K5F3w3ijK97nQxSX3ZyRDIjmIUhOjBjZg=
 github.com/tesrohit-developer/go-dmux/plugins v0.0.0-20220818062810-5e555abc320b/go.mod h1:TJXYzyjMITUHie52e/DtrnfHIBr8KDVcrTZ+IqUZXIw=
+github.com/tesrohit-developer/go-dmux/plugins v0.0.0-20220819064100-f6ecf5ef005a h1:+N0ryCSaLGnGhtc7UymOpRRSQ8TpWg/3HHaLsZlezdM=
+github.com/tesrohit-developer/go-dmux/plugins v0.0.0-20220819064100-f6ecf5ef005a/go.mod h1:TJXYzyjMITUHie52e/DtrnfHIBr8KDVcrTZ+IqUZXIw=
 github.com/wvanbergen/kafka v0.0.0-20171203153745-e2edea948ddf/go.mod h1:nxx7XRXbR9ykhnC8lXqQyJS0rfvJGxKyKw/sT1YOttg=
 github.com/wvanbergen/kazoo-go v0.0.0-20180202103751-f72d8611297a/go.mod h1:vQQATAGxVK20DC1rRubTJbZDDhhpA4QfU02pMdPxGO4=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
