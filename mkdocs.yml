@@ -1,6 +1,6 @@
 site_name: go-dmux
 repo_name: 'flipkart-incubator/go-dmux'
-repo_url: https://github.com/flipkart-incubator/go-dmux
+repo_url: https://github.com/tesrohit-developer/go-dmux
 edit_uri: blob/master/docs/
 theme:
   name: material

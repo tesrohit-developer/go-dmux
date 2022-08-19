@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/flipkart-incubator/go-dmux/metrics"
+	"github.com/tesrohit-developer/go-dmux/metrics"
 	"log"
 	"os"
 
-	"github.com/flipkart-incubator/go-dmux/logging"
+	"github.com/tesrohit-developer/go-dmux/logging"
 )
 
 //

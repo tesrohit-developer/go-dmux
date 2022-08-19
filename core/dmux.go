@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	source "github.com/flipkart-incubator/go-dmux/kafka"
+	source "github.com/tesrohit-developer/go-dmux/kafka"
 	"github.com/tesrohit-developer/go-dmux/plugins"
 	"log"
 	"math"

@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/flipkart-incubator/go-dmux/connection"
-	"github.com/flipkart-incubator/go-dmux/logging"
+	"github.com/tesrohit-developer/go-dmux/connection"
+	"github.com/tesrohit-developer/go-dmux/logging"
 )
 
 //ConnectionType based on this type of Connection and related forks happen

@@ -34,7 +34,7 @@ Payload in batch is encoded to convert 2d byte[] to 1d byte[], without any seria
 TODO
 
 ###Java Lib
-Java library exist to help decode : https://github.com/flipkart-incubator/go-dmux/tree/master/java/godmux-tools
+Java library exist to help decode : https://github.com/tesrohit-developer/go-dmux/tree/master/java/godmux-tools
 
 You can add the below POM dependency. (TODO) move this to release version
 

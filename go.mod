@@ -1,10 +1,6 @@
-module github.com/flipkart-incubator/go-dmux
+module github.com/tesrohit-developer/go-dmux
 
 go 1.12
-
-//replace github.com/flipkart-incubator/go-dmux/plugins => github.com/tesrohit-developer/go-dmux/plugins v0.0.0-20220818134212-ed73e8cf1543
-
-//replace github.com/flipkart-incubator/go-dmux => github.com/tesrohit-developer/go-dmux
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
@@ -25,7 +21,6 @@ require (
 	github.com/samuel/go-zookeeper v0.0.0-20180130194729-c4fab1ac1bec
 	github.com/stretchr/objx v0.1.1 // indirect
 	github.com/stretchr/testify v1.4.0
-	//github.com/tesrohit-developer/go-dmux/plugins v0.0.0-20220819064100-f6ecf5ef005a
 	github.com/wvanbergen/kafka v0.0.0-20171203153745-e2edea948ddf // indirect
 	github.com/wvanbergen/kazoo-go v0.0.0-20180202103751-f72d8611297a // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect

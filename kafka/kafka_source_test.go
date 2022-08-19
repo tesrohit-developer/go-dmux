@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/Shopify/sarama"
-	"github.com/flipkart-incubator/go-dmux/core"
 	"github.com/stretchr/testify/assert"
+	"github.com/tesrohit-developer/go-dmux/core"
 	// "hash/fnv"
 	// "time"
 )

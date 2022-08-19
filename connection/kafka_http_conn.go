@@ -10,9 +10,9 @@ import (
 	"strings"
 
 	"github.com/Shopify/sarama"
-	"github.com/flipkart-incubator/go-dmux/core"
-	sink "github.com/flipkart-incubator/go-dmux/http"
-	source "github.com/flipkart-incubator/go-dmux/kafka"
+	"github.com/tesrohit-developer/go-dmux/core"
+	sink "github.com/tesrohit-developer/go-dmux/http"
+	source "github.com/tesrohit-developer/go-dmux/kafka"
 )
 
 // **************** CONFIG ***********
