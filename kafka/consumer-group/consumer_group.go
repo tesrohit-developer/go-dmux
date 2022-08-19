@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Shopify/sarama"
+	"github.com/tesrohit-developer/go-dmux/kafka/kazoo-go"
 	"sync"
 	"time"
 )

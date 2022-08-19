@@ -3,6 +3,7 @@ package consumergroup
 import (
 	"crypto/rand"
 	"fmt"
+	"github.com/tesrohit-developer/go-dmux/kafka/kazoo-go"
 	"io"
 	"os"
 	"sort"
