@@ -52,9 +52,9 @@ func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key []byte, resp *[
 	return err
 }
 
-func (s *CheckMessageSidelineRPCServer) SidelineMessage(msg []byte, sidelineMessageResponse *SidelineMessageResponse) SidelineMessageResponse {
+func (s *CheckMessageSidelineRPCServer) SidelineMessage(msg []byte, sidelineMessageResponse *SidelineMessageResponse) error {
 	*sidelineMessageResponse = s.Impl.SidelineMessage(msg)
-	return *sidelineMessageResponse
+	return nil
 }
 
 // Dummy implementation of a plugin.Plugin interface for use in PluginMap.
