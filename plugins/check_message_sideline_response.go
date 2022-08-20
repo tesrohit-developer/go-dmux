@@ -1,6 +1,6 @@
 package plugins
 
 type CheckMessageSidelineResponse struct {
-	IsMessageSidelined bool
-	Version            int32
+	SidelineMessage bool
+	Version         int32
 }

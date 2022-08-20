@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	source "github.com/flipkart-incubator/go-dmux/kafka"
-	"github.com/tesrohit-developer/go-dmux/plugins"
+	"github.com/flipkart-incubator/go-dmux/plugins"
 	"log"
 	"math"
 	"sync"
@@ -353,8 +353,8 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						continue
 					}
 
-					log.Printf("Message if already sidelined %t %d %d", check.IsMessageSidelined, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-					if check.IsMessageSidelined {
+					log.Printf("Message if already sidelined %t %d %d", check.SidelineMessage, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+					if check.SidelineMessage {
 						var version int32
 						version = check.Version
 						sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
