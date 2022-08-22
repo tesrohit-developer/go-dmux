@@ -51,9 +51,14 @@ func getSidelinePlugin(conf interface{}) interface{} {
 
 	// Launch all sidelineImpls binaries
 	sidelineImpls.Launch()
+
 	p, err := sidelineImpls.GetInterface(sidelinePluginConfig.SidelinePluginConfigDetails.Id)
 	if err != nil {
 		log.Fatal(err.Error())
+	}
+	initErr := p.(plugins.CheckMessageSidelineImpl).Init(conf)
+	if initErr != nil {
+		return nil
 	}
 	return p
 }

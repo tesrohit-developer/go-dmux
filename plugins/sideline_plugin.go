@@ -1,8 +1,8 @@
 package plugins
 
 import (
-	"fmt"
 	gplugin "github.com/hashicorp/go-plugin"
+	"log"
 	"net/rpc"
 )
 
@@ -10,6 +10,7 @@ import (
 type CheckMessageSidelineImpl interface {
 	CheckMessageSideline(key []byte) ([]byte, error)
 	SidelineMessage(msg []byte) SidelineMessageResponse
+	Init(conf interface{}) error
 }
 
 // Here is an implementation that talks over RPC
@@ -19,10 +20,10 @@ type CheckMessageSidelineRPC struct {
 
 func (g *CheckMessageSidelineRPC) CheckMessageSideline(key []byte) ([]byte, error) {
 	var resp []byte
-	fmt.Println("Checking from dmux plugin")
+	log.Printf("Checking from dmux plugin")
 	err := g.Client.Call("Plugin.CheckMessageSideline", key, &resp)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Printf(err.Error())
 		return nil, err
 	}
 	return resp, nil
@@ -32,11 +33,26 @@ func (g *CheckMessageSidelineRPC) SidelineMessage(msg []byte) SidelineMessageRes
 	var resp SidelineMessageResponse
 	err := g.Client.Call("Plugin.SidelineMessage", msg, &resp)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Printf(err.Error())
 		sidelineMessageResponse := SidelineMessageResponse{UnknownError: true}
 		return sidelineMessageResponse
 	}
 	return resp
+}
+
+func (g *CheckMessageSidelineRPC) Init(conf interface{}) error {
+	var resp error
+	log.Printf("Checking from dmux plugin")
+	err := g.Client.Call("Plugin.Init", conf, &resp)
+	if err != nil {
+		log.Printf(err.Error())
+		return err
+	}
+	if resp != nil {
+		log.Printf(resp.Error())
+		return resp
+	}
+	return nil
 }
 
 // Here is the RPC server that CheckMessageSidelineRPC talks to, conforming to
@@ -49,6 +65,12 @@ type CheckMessageSidelineRPCServer struct {
 func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key []byte, resp *[]byte) error {
 	var err error
 	*resp, err = s.Impl.CheckMessageSideline(key)
+	return err
+}
+
+func (s *CheckMessageSidelineRPCServer) Init(conf interface{}) error {
+	var err error
+	err = s.Impl.Init(conf)
 	return err
 }
 
