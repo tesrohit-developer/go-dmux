@@ -65,7 +65,11 @@ func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineEnable
 	case KafkaHTTP:
 		if sidelineEnabled {
 			plugin := getSidelinePlugin(conf)
-			initErr := plugin.(plugins.CheckMessageSidelineImpl).InitialisePlugin(conf)
+			confBytes, err := json.Marshal(conf)
+			if err != nil {
+				log.Fatal("Error in InitialisePlugin " + err.Error())
+			}
+			initErr := plugin.(plugins.CheckMessageSidelineImpl).InitialisePlugin(confBytes)
 			if initErr != nil {
 				log.Fatal(initErr.Error())
 			}
