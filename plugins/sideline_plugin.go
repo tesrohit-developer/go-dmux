@@ -10,7 +10,7 @@ import (
 type CheckMessageSidelineImpl interface {
 	CheckMessageSideline(key []byte) ([]byte, error)
 	SidelineMessage(msg []byte) SidelineMessageResponse
-	Init(conf interface{}) error
+	InitialisePlugin(conf interface{}) error
 }
 
 // Here is an implementation that talks over RPC
@@ -40,7 +40,7 @@ func (g *CheckMessageSidelineRPC) SidelineMessage(msg []byte) SidelineMessageRes
 	return resp
 }
 
-func (g *CheckMessageSidelineRPC) Init(conf interface{}) error {
+func (g *CheckMessageSidelineRPC) InitialisePlugin(conf interface{}) error {
 	var resp error
 	log.Printf("Checking from dmux plugin")
 	err := g.Client.Call("Plugin.Init", conf, &resp)
@@ -68,9 +68,9 @@ func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key []byte, resp *[
 	return err
 }
 
-func (s *CheckMessageSidelineRPCServer) Init(conf interface{}) error {
+func (s *CheckMessageSidelineRPCServer) InitialisePlugin(conf interface{}) error {
 	var err error
-	err = s.Impl.Init(conf)
+	err = s.Impl.InitialisePlugin(conf)
 	return err
 }
 
