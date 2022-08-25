@@ -58,7 +58,7 @@ func getSidelinePlugin(conf interface{}) interface{} {
 	}
 	initErr := p.(plugins.CheckMessageSidelineImpl).InitialisePlugin(conf)
 	if initErr != nil {
-		return nil
+		log.Fatal(err.Error())
 	}
 	return p
 }
