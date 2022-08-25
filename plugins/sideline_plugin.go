@@ -43,7 +43,7 @@ func (g *CheckMessageSidelineRPC) SidelineMessage(msg []byte) SidelineMessageRes
 func (g *CheckMessageSidelineRPC) InitialisePlugin(conf interface{}) error {
 	var resp error
 	log.Printf("Checking from dmux InitialisePlugin plugin")
-	err := g.Client.Call("Plugin.Init", conf, &resp)
+	err := g.Client.Call("Plugin.InitialisePlugin", conf, &resp)
 	if err != nil {
 		log.Printf(err.Error())
 		return err
