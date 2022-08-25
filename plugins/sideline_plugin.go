@@ -68,9 +68,9 @@ func (s *CheckMessageSidelineRPCServer) CheckMessageSideline(key []byte, resp *[
 	return err
 }
 
-func (s *CheckMessageSidelineRPCServer) InitialisePlugin(conf interface{}, err error) error {
-	err = s.Impl.InitialisePlugin(conf)
-	return err
+func (s *CheckMessageSidelineRPCServer) InitialisePlugin(conf interface{}, err *error) error {
+	*err = s.Impl.InitialisePlugin(conf)
+	return *err
 }
 
 func (s *CheckMessageSidelineRPCServer) SidelineMessage(msg []byte, sidelineMessageResponse *SidelineMessageResponse) error {
