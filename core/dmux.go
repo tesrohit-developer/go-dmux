@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	source "github.com/flipkart-incubator/go-dmux/kafka"
-	"github.com/tesrohit-developer/go-dmux/plugins"
+	"github.com/flipkart-incubator/go-dmux/plugins"
 	"log"
 	"math"
 	"sync"
@@ -336,14 +336,28 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 			sk := sink.Clone()
 			for msg := range ch[index] {
 				val := msg.(source.KafkaMsg)
-				var checkBytes []byte
 				var check plugins.CheckMessageSidelineResponse
-				var checkErr = errors.New("")
 				for {
 					var retryMessage = false
 					log.Printf("Checking if the message is already sidelined %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-					checkBytes, checkErr = sidelinePlugin.(plugins.CheckMessageSidelineImpl).
-						CheckMessageSideline([]byte(string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName))
+					checkSidelineMessage := plugins.SidelineMessage{
+						GroupId:           string(val.GetRawMsg().Key),
+						Partition:         val.GetRawMsg().Partition,
+						EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
+						Offset:            val.GetRawMsg().Offset,
+						ConsumerGroupName: sideline.ConsumerGroupName,
+						ClusterName:       sideline.ClusterName,
+						Message:           val.GetRawMsg().Value,
+						ConnectionType:    sideline.ConnectionType,
+					}
+					checkSidelineMessageBytes, checkSidelineMessageErr := json.Marshal(checkSidelineMessage)
+					if checkSidelineMessageErr != nil {
+						log.Printf("error in serde of checkSidelineMessage")
+						errors.New("error in serde of checkSidelineMessage")
+						continue
+					}
+					checkBytes, checkErr := sidelinePlugin.(plugins.CheckMessageSidelineImpl).
+						CheckMessageSideline(checkSidelineMessageBytes)
 					err := json.Unmarshal(checkBytes, &check)
 					if err != nil {
 						errors.New("error in serde of CheckMessageSidelineResponse")
