@@ -2,39 +2,40 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/flipkart-incubator/go-dmux/plugins"
 	"github.com/gorilla/mux"
-	"github.com/tesrohit-developer/go-dmux/plugins"
 	"log"
 	"net/http"
+	"os"
 )
 
 var scanPlugin interface{}
 var unsidelinePlugin interface{}
 
-func getScanPlugin() interface{} {
-	s := plugins.NewManager("scan_plugin", "scan-*", "", &plugins.ScanImplPlugin{})
+func getScanPlugin(meta PluginMeta) interface{} {
+	s := plugins.NewManager(meta.Prefix, meta.Path, "", &plugins.ScanImplPlugin{})
 	//defer s.Dispose()
 	err := s.Init()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	s.Launch()
-	p, err := s.GetInterface("sideline-em")
+	p, err := s.GetInterface(meta.Id)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	return p
 }
 
-func getUnsidelinePlugin() interface{} {
-	s := plugins.NewManager("unsideline_plugin", "unsideline-*", "", &plugins.UnsidelineImplPlugin{})
+func getUnsidelinePlugin(meta PluginMeta) interface{} {
+	s := plugins.NewManager(meta.Prefix, meta.Path, "", &plugins.UnsidelineImplPlugin{})
 	//defer s.Dispose()
 	err := s.Init()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	s.Launch()
-	p, err := s.GetInterface("em")
+	p, err := s.GetInterface(meta.Id)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -80,11 +81,23 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	log.Println("Hi starting the API")
-	scanPlugin = getScanPlugin()
-	unsidelinePlugin = getUnsidelinePlugin()
+	args := os.Args[1:]
+	sz := len(args)
+	var path string
+	if sz == 1 {
+		path = args[0]
+	} else {
+		log.Fatalf("Received incorrect number of args %d expected only 1", sz)
+	}
+	unsidelineConfig := UnsidelineConfig{
+		FilePath: path,
+	}
+	unsidelineContainerConfig := unsidelineConfig.getUnsidelineContainerConfig()
+	scanPlugin = getScanPlugin(unsidelineContainerConfig.PluginsMeta.ScanPluginMeta)
+	unsidelinePlugin = getUnsidelinePlugin(unsidelineContainerConfig.PluginsMeta.UnsidelinePluginMeta)
 	r := mux.NewRouter()
 	r.HandleFunc("/scan/{startRow}/{endRow}", scan)
 	r.HandleFunc("/unsideline/{key}", unsideline)
 	r.HandleFunc("/healthCheck", healthCheck)
-	log.Fatal(http.ListenAndServe(":9951", r))
+	log.Fatal(http.ListenAndServe(":"+unsidelineContainerConfig.Port, r))
 }

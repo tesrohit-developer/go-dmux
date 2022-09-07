@@ -7,7 +7,7 @@ RUN apt-get update \
  && apt-get install apt-transport-https -y \
  && update-ca-certificates
 
-COPY . .
+COPY .. .
 
 WORKDIR unsideline/
 
@@ -43,4 +43,4 @@ RUN groupadd -g ${GID} ${group} && \
 
 USER ${user}
 
-ENTRYPOINT ["./unsideline"]
+ENTRYPOINT ["./unsideline", "/app/config/unsideline-config.json"]
