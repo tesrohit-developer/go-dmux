@@ -7,7 +7,7 @@ RUN apt-get update \
  && apt-get install apt-transport-https -y \
  && update-ca-certificates
 
-COPY .. .
+COPY . .
 
 WORKDIR unsideline/
 
