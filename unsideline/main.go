@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/flipkart-incubator/go-dmux/plugins"
 	"github.com/gorilla/mux"
+	"github.com/tesrohit-developer/go-dmux/plugins"
 	"log"
 	"net/http"
 	"os"
