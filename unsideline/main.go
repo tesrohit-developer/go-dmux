@@ -13,7 +13,10 @@ var scanPlugin interface{}
 var unsidelinePlugin interface{}
 
 func getScanPlugin(meta PluginMeta) interface{} {
-	s := plugins.NewManager(meta.Prefix, meta.Path, "", &plugins.ScanImplPlugin{})
+	s := plugins.NewManager(meta.Prefix, meta.Path, meta.Id, &plugins.ScanImplPlugin{})
+	log.Printf("Prefix : " + meta.Prefix)
+	log.Printf("Path : " + meta.Path)
+	log.Printf("Id : " + meta.Id)
 	//defer s.Dispose()
 	err := s.Init()
 	if err != nil {
@@ -28,7 +31,10 @@ func getScanPlugin(meta PluginMeta) interface{} {
 }
 
 func getUnsidelinePlugin(meta PluginMeta) interface{} {
-	s := plugins.NewManager(meta.Prefix, meta.Path, "", &plugins.UnsidelineImplPlugin{})
+	s := plugins.NewManager(meta.Prefix, meta.Path, meta.Id, &plugins.UnsidelineImplPlugin{})
+	log.Printf("Prefix : " + meta.Prefix)
+	log.Printf("Path : " + meta.Path)
+	log.Printf("Id : " + meta.Id)
 	//defer s.Dispose()
 	err := s.Init()
 	if err != nil {
