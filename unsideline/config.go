@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"time"
 )
 
 type PluginMeta struct {
@@ -29,6 +30,7 @@ type UnsidelineConfig struct {
 func (unsidelineConfig UnsidelineConfig) getUnsidelineContainerConfig() UnsidelineContainerConfig {
 	raw, err := ioutil.ReadFile(unsidelineConfig.FilePath)
 	if err != nil {
+		time.Sleep(60 * time.Second)
 		log.Fatal(err.Error())
 	}
 	var conf UnsidelineContainerConfig
