@@ -20,7 +20,7 @@ type PluginsMeta struct {
 
 type UnsidelineContainerConfig struct {
 	PluginsMeta PluginsMeta `json:"pluginsMeta"`
-	Port        string      `json:"port"`
+	Port        int64       `json:"port"`
 }
 
 type UnsidelineConfig struct {
