@@ -102,5 +102,5 @@ func main() {
 	r.HandleFunc("/scan/{startRow}/{endRow}", scan)
 	r.HandleFunc("/unsideline/{key}", unsideline)
 	r.HandleFunc("/healthCheck", healthCheck)
-	log.Fatal(http.ListenAndServe(":"+unsidelineContainerConfig.Port, r))
+	log.Fatal(http.ListenAndServe(":"+string(unsidelineContainerConfig.Port), r))
 }
