@@ -17,6 +17,8 @@ type ConnectionType string
 const (
 	//KafkaHTTP key to define kafka to generic http sink
 	KafkaHTTP ConnectionType = "kafka_http"
+	//KafkaHTTPSideline key to define kafka to generic http sink
+	KafkaHTTPSideline ConnectionType = "kafka_http_sideline"
 	//KafkaFoxtrot key to define kafka to foxtrot http sink
 	KafkaFoxtrot ConnectionType = "kafka_foxtrot"
 )
@@ -63,31 +65,29 @@ func getSidelinePlugin(conf interface{}) interface{} {
 func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineEnabled bool) {
 	switch c {
 	case KafkaHTTP:
-		if sidelineEnabled {
-			plugin := getSidelinePlugin(conf)
-			confBytes, err := json.Marshal(conf)
-			if err != nil {
-				log.Fatal("Error in InitialisePlugin " + err.Error())
-			}
-			initErr := plugin.(plugins.CheckMessageSidelineImpl).InitialisePlugin(confBytes)
-			if initErr != nil {
-				log.Fatal(initErr.Error())
-			}
-			connObj := &connection.KafkaHTTPConn{
-				EnableDebugLog: enableDebug,
-				Conf:           conf,
-				SidelinePlugin: plugin,
-			}
-			log.Println("Starting With Sideline ", KafkaHTTP)
-			connObj.Run()
-		} else {
-			connObj := &connection.KafkaHTTPConn{
-				EnableDebugLog: enableDebug,
-				Conf:           conf,
-			}
-			log.Println("Starting Without Sideline ", KafkaHTTP)
-			connObj.Run()
+		connObj := &connection.KafkaHTTPConn{
+			EnableDebugLog: enableDebug,
+			Conf:           conf,
 		}
+		log.Println("Starting Without Sideline ", KafkaHTTP)
+		connObj.Run()
+	case KafkaHTTPSideline:
+		plugin := getSidelinePlugin(conf)
+		confBytes, err := json.Marshal(conf)
+		if err != nil {
+			log.Fatal("Error in InitialisePlugin " + err.Error())
+		}
+		initErr := plugin.(plugins.CheckMessageSidelineImpl).InitialisePlugin(confBytes)
+		if initErr != nil {
+			log.Fatal(initErr.Error())
+		}
+		connObj := &connection.KafkaHTTPConnWithSideline{
+			EnableDebugLog: enableDebug,
+			Conf:           conf,
+			SidelinePlugin: plugin,
+		}
+		log.Println("Starting With Sideline ", KafkaHTTP)
+		connObj.Run()
 	case KafkaFoxtrot:
 		log.Printf("Sidelining not supported for Foxtrot")
 		connObj := &connection.KafkaFoxtrotConn{

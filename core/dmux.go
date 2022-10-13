@@ -153,8 +153,13 @@ func GetDmux(conf DmuxConf, d Distributor) *Dmux {
 }
 
 //Connect method holds Dmux logic used to Connect Source to Sink
-func (d *Dmux) Connect(source Source, sink Sink, sidelinePlugin interface{}) {
-	go d.run(source, sink, sidelinePlugin)
+func (d *Dmux) Connect(source Source, sink Sink) {
+	go d.run(source, sink)
+}
+
+//Connect method holds Dmux logic used to Connect Source to Sink
+func (d *Dmux) ConnectWithSideline(source Source, sink Sink, sidelinePlugin interface{}) {
+	go d.runWithSideline(source, sink, sidelinePlugin)
 }
 
 //Await method added to enable testing when using bounded source
@@ -206,9 +211,8 @@ func getStopMsg() ControlMsg {
 	return c
 }
 
-func (d *Dmux) run(source Source, sink Sink, sidelinePlugin interface{}) {
-
-	ch, wg := setup(d.size, d.sinkQSize, d.batchSize, sink, d.version, d.sideline, sidelinePlugin)
+func (d *Dmux) run(source Source, sink Sink) {
+	ch, wg := setup(d.size, d.sinkQSize, d.batchSize, sink, d.version)
 	in := make(chan interface{}, d.sourceQSize)
 	//start source
 	//TODO handle panic recovery if in channel is closed for shutdown
@@ -225,7 +229,7 @@ func (d *Dmux) run(source Source, sink Sink, sidelinePlugin interface{}) {
 				fmt.Println("processing resize")
 				shutdown(ch, wg)
 				resizeMeta := ctrl.meta.(ResizeMeta)
-				ch, wg = setup(resizeMeta.newSize, d.sinkQSize, d.batchSize, sink, d.version, d.sideline, sidelinePlugin)
+				ch, wg = setup(resizeMeta.newSize, d.sinkQSize, d.batchSize, sink, d.version)
 				d.response <- ResponseMsg{ctrl.signal, Sucess}
 			} else if ctrl.signal == Stop {
 				fmt.Println("processing stop")
@@ -238,7 +242,40 @@ func (d *Dmux) run(source Source, sink Sink, sidelinePlugin interface{}) {
 			}
 		}
 	}
+}
 
+func (d *Dmux) runWithSideline(source Source, sink Sink, sidelinePlugin interface{}) {
+
+	ch, wg := setupWithSideline(d.size, d.sinkQSize, d.batchSize, sink, d.version, d.sideline, sidelinePlugin)
+	in := make(chan interface{}, d.sourceQSize)
+	//start source
+	//TODO handle panic recovery if in channel is closed for shutdown
+	go source.Generate(in)
+
+	for {
+		select {
+		case data := <-in:
+			i := d.distribute.Distribute(data, len(ch))
+			// fmt.Printf("writing to channel %d len %d", i, len(ch[i]))
+			ch[i] <- data
+		case ctrl := <-d.control:
+			if ctrl.signal == Resize {
+				fmt.Println("processing resize")
+				shutdown(ch, wg)
+				resizeMeta := ctrl.meta.(ResizeMeta)
+				ch, wg = setupWithSideline(resizeMeta.newSize, d.sinkQSize, d.batchSize, sink, d.version, d.sideline, sidelinePlugin)
+				d.response <- ResponseMsg{ctrl.signal, Sucess}
+			} else if ctrl.signal == Stop {
+				fmt.Println("processing stop")
+				source.Stop()
+				shutdown(ch, wg)
+				close(in)
+				d.response <- ResponseMsg{ctrl.signal, Sucess}
+				d.err <- nil
+				return
+			}
+		}
+	}
 }
 
 func shutdown(ch []chan interface{}, wg *sync.WaitGroup) {
@@ -248,18 +285,23 @@ func shutdown(ch []chan interface{}, wg *sync.WaitGroup) {
 	wg.Wait()
 }
 
-func setup(size, qsize, batchSize int, sink Sink, version int, sideline Sideline, sidelinePlugin interface{}) ([]chan interface{}, *sync.WaitGroup) {
+func setup(size, qsize, batchSize int, sink Sink, version int) ([]chan interface{}, *sync.WaitGroup) {
 	if version == 1 && batchSize == 1 {
-		if sidelinePlugin != nil {
-			log.Printf("Calling simpleSetupWithSideline")
-			return simpleSetupWithSideline(size, qsize, sink, sideline, sidelinePlugin)
-		} else {
-			log.Printf("Calling simpleSetup")
-			return simpleSetup(size, qsize, sink)
-		}
+		log.Printf("Calling simpleSetup")
+		return simpleSetup(size, qsize, sink)
 	} else {
 		log.Printf("Calling batchSetup")
 		return batchSetup(size, qsize, batchSize, sink, version)
+	}
+}
+
+func setupWithSideline(size, qsize, batchSize int, sink Sink, version int, sideline Sideline, sidelinePlugin interface{}) ([]chan interface{}, *sync.WaitGroup) {
+	if version == 1 && batchSize == 1 {
+		log.Printf("Calling simpleSetupWithSideline")
+		return simpleSetupWithSideline(size, qsize, sink, sideline, sidelinePlugin)
+	} else {
+		log.Fatal("Not Supported sidelining for batching")
+		return nil, nil
 	}
 }
 

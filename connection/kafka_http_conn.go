@@ -29,7 +29,6 @@ type KafkaHTTPConnConfig struct {
 type KafkaHTTPConn struct {
 	EnableDebugLog bool
 	Conf           interface{}
-	SidelinePlugin interface{}
 }
 
 func (c *KafkaHTTPConn) getConfiguration() *KafkaHTTPConnConfig {
@@ -62,7 +61,7 @@ func (c *KafkaHTTPConn) Run() {
 	d := core.GetDistribution(conf.Dmux.DistributorType, h)
 
 	dmux := core.GetDmux(conf.Dmux, d)
-	dmux.Connect(src, sk, c.SidelinePlugin)
+	dmux.Connect(src, sk)
 	dmux.Join()
 }
 
