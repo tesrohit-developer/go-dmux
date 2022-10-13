@@ -89,6 +89,7 @@ func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineEnable
 			connObj.Run()
 		}
 	case KafkaFoxtrot:
+		log.Printf("Sidelining not supported for Foxtrot")
 		connObj := &connection.KafkaFoxtrotConn{
 			EnableDebugLog: enableDebug,
 			Conf:           conf,
