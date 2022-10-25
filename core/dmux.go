@@ -380,6 +380,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 		go func(index int) {
 			sk := sink.Clone()
 			for channelObject := range sinkChannel[index] {
+				log.Printf("Inside Sink channel ")
 				for {
 					consumeError := sk.Consume(channelObject.Msg, sideline.Retries)
 					if consumeError == nil {
@@ -412,6 +413,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						continue
 					}
 					val := channelObject.Msg.(source.KafkaMsg)
+					log.Printf("Inside sideline channel for partition %d offset %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 					kafkaSidelineMessage := plugins.SidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
 						Partition:         val.GetRawMsg().Partition,
@@ -479,7 +481,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 				val := msg.(source.KafkaMsg)
 				var check plugins.CheckMessageSidelineResponse
 				for {
-					log.Printf("Checking if the message is already sidelined %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+					log.Printf("Checking if the message is already sidelined %d, %d from channel", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 					checkSidelineMessage := plugins.SidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
 						Partition:         val.GetRawMsg().Partition,
