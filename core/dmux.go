@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	source "github.com/flipkart-incubator/go-dmux/kafka"
-	"github.com/tesrohit-developer/go-dmux/plugins"
+	"github.com/flipkart-incubator/go-dmux/plugins"
 	"log"
 	"math"
 	"sync"
@@ -372,15 +372,113 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 	wg := new(sync.WaitGroup)
 	wg.Add(size)
 	ch := make([]chan interface{}, size)
+	sidelineChannel := make([]chan ChannelObject, size)
+	sinkChannel := make([]chan ChannelObject, size)
+
+	for i := 0; i < size; i++ {
+		sinkChannel[i] = make(chan ChannelObject, qsize)
+		go func(index int) {
+			sk := sink.Clone()
+			for channelObject := range sinkChannel[index] {
+				for {
+					consumeError := sk.Consume(channelObject.Msg, sideline.Retries)
+					if consumeError == nil {
+						break
+					}
+					if consumeError != nil && consumeError.Error() == "exceeded retries" {
+						sendToSidelineChannel := ChannelObject{
+							Msg:      channelObject.Msg,
+							Sideline: channelObject.Sideline,
+							Version:  0,
+						}
+						sidelineChannel[index] <- sendToSidelineChannel
+						break
+					}
+					continue
+				}
+			}
+		}(i)
+	}
+
+	for i := 0; i < size; i++ {
+		sidelineChannel[i] = make(chan ChannelObject, qsize)
+		go func(index int) {
+			for channelObject := range sidelineChannel[index] {
+				for {
+					sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
+					if sidelineMetaByteArrayErr != nil {
+						//TODO : think about this
+						log.Printf("error in serde of SidelineMeta")
+						continue
+					}
+					val := channelObject.Msg.(source.KafkaMsg)
+					kafkaSidelineMessage := plugins.SidelineMessage{
+						GroupId:           string(val.GetRawMsg().Key),
+						Partition:         val.GetRawMsg().Partition,
+						EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
+						Offset:            val.GetRawMsg().Offset,
+						ConsumerGroupName: sideline.ConsumerGroupName,
+						ClusterName:       sideline.ClusterName,
+						Message:           val.GetRawMsg().Value,
+						Version:           channelObject.Version,
+						ConnectionType:    sideline.ConnectionType,
+						SidelineMeta:      sidelineMetaByteArray,
+					}
+
+					sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
+					if err != nil {
+						log.Printf("error in serde of kafkaSidelineMessage")
+						continue
+					}
+					sidelineMessageResponse := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
+					if !sidelineMessageResponse.Success {
+						var check plugins.CheckMessageSidelineResponse
+						log.Printf(sidelineMessageResponse.ErrorMessage)
+						if sidelineMessageResponse.ConcurrentModificationError {
+							checkSidelineMessage := plugins.SidelineMessage{
+								GroupId:           string(val.GetRawMsg().Key),
+								Partition:         val.GetRawMsg().Partition,
+								EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
+								Offset:            val.GetRawMsg().Offset,
+								ConsumerGroupName: sideline.ConsumerGroupName,
+								ClusterName:       sideline.ClusterName,
+								Message:           val.GetRawMsg().Value,
+								ConnectionType:    sideline.ConnectionType,
+							}
+							checkSidelineMessageBytes, checkSidelineMessageErr := json.Marshal(checkSidelineMessage)
+							if checkSidelineMessageErr != nil {
+								log.Printf("error in serde of checkSidelineMessage")
+								errors.New("error in serde of checkSidelineMessage")
+								continue
+							}
+							checkBytes, checkErr := sidelinePlugin.(plugins.CheckMessageSidelineImpl).
+								CheckMessageSideline(checkSidelineMessageBytes)
+							err := json.Unmarshal(checkBytes, &check)
+							if err != nil {
+								errors.New("error in serde of CheckMessageSidelineResponse")
+								continue
+							}
+							if checkErr != nil {
+								continue
+							}
+							channelObject.Version = check.Version
+							continue
+						}
+						continue
+					}
+					break
+				}
+			}
+		}(i)
+	}
+
 	for i := 0; i < size; i++ {
 		ch[i] = make(chan interface{}, qsize)
 		go func(index int) {
-			sk := sink.Clone()
 			for msg := range ch[index] {
 				val := msg.(source.KafkaMsg)
 				var check plugins.CheckMessageSidelineResponse
 				for {
-					var retryMessage = false
 					log.Printf("Checking if the message is already sidelined %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 					checkSidelineMessage := plugins.SidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
@@ -408,92 +506,21 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					if checkErr != nil {
 						continue
 					}
-
 					log.Printf("Message if already sidelined %t %d %d", check.SidelineMessage, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
 					if check.SidelineMessage {
-						var version int32
-						version = check.Version
-						sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
-						if sidelineMetaByteArrayErr != nil {
-							log.Printf("error in serde of SidelineMeta")
-							continue
+						sendToSidelineChannel := ChannelObject{
+							Msg:      msg,
+							Sideline: sideline,
+							Version:  check.Version,
 						}
-						kafkaSidelineMessage := plugins.SidelineMessage{
-							GroupId:           string(val.GetRawMsg().Key),
-							Partition:         val.GetRawMsg().Partition,
-							EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
-							Offset:            val.GetRawMsg().Offset,
-							ConsumerGroupName: sideline.ConsumerGroupName,
-							ClusterName:       sideline.ClusterName,
-							Message:           val.GetRawMsg().Value,
-							Version:           version,
-							ConnectionType:    sideline.ConnectionType,
-							SidelineMeta:      sidelineMetaByteArray,
-						}
-						for {
-							log.Printf("Sidelining the message %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-							sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
-							if err != nil {
-								log.Printf("error in serde of kafkaSidelineMessage")
-								continue
-							}
-							sidelineMessageResponse := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
-							if !sidelineMessageResponse.Success {
-								log.Printf(sidelineMessageResponse.ErrorMessage)
-								if sidelineMessageResponse.ConcurrentModificationError {
-									retryMessage = true
-									break
-								}
-								continue
-							}
-							break
-						}
-						if retryMessage {
-							continue
-						}
+						sidelineChannel[index] <- sendToSidelineChannel
 						break
 					} else {
-						consumeError := sk.Consume(msg, sideline.Retries)
-						if consumeError != nil && consumeError.Error() == "exceeded retries" {
-							sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
-							if sidelineMetaByteArrayErr != nil {
-								log.Printf("error in serde of SidelineMeta")
-								continue
-							}
-							kafkaSidelineMessage := plugins.SidelineMessage{
-								GroupId:           string(val.GetRawMsg().Key),
-								Partition:         val.GetRawMsg().Partition,
-								EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
-								Offset:            val.GetRawMsg().Offset,
-								ConsumerGroupName: sideline.ConsumerGroupName,
-								ClusterName:       sideline.ClusterName,
-								Message:           val.GetRawMsg().Value,
-								Version:           0,
-								ConnectionType:    sideline.ConnectionType,
-								SidelineMeta:      sidelineMetaByteArray,
-							}
-							for {
-								log.Printf("Sidelining the message as exceeded retries %d, %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-								sidelineByteArray, err := json.Marshal(kafkaSidelineMessage)
-								if err != nil {
-									errors.New("error in serde of kafkaSidelineMessage")
-									continue
-								}
-								sidelineMessageResponse := sidelinePlugin.(plugins.CheckMessageSidelineImpl).SidelineMessage(sidelineByteArray)
-								if !sidelineMessageResponse.Success {
-									log.Printf(sidelineMessageResponse.ErrorMessage)
-									if sidelineMessageResponse.ConcurrentModificationError {
-										retryMessage = true
-										break
-									}
-									continue
-								}
-								break
-							}
+						sendToSinkChannel := ChannelObject{
+							Msg:      msg,
+							Sideline: sideline,
 						}
-						if retryMessage {
-							continue
-						}
+						sinkChannel[index] <- sendToSinkChannel
 						break
 					}
 				}
