@@ -7,8 +7,9 @@ import (
 
 //
 
-// **************** Bootstrap ***********
+type DmuxCustom struct {
+}
 
-func dmuxStart(checkMessageSideline sideline.CheckMessageSideline) {
+func (d *DmuxCustom) dmuxStart(checkMessageSideline sideline.CheckMessageSideline) {
 	fmt.Println(checkMessageSideline.SidelineMessage())
 }
