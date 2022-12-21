@@ -10,6 +10,6 @@ import (
 type DmuxCustom struct {
 }
 
-func (d *DmuxCustom) dmuxStart(checkMessageSideline sideline.CheckMessageSideline) {
+func (d *DmuxCustom) DmuxStart(checkMessageSideline sideline.CheckMessageSideline) {
 	fmt.Println(checkMessageSideline.SidelineMessage())
 }
