@@ -69,7 +69,7 @@ type DMuxConfigSetting struct {
 	FilePath string
 }
 
-//DmuxConf hold config data
+//DmuxConf hold Config data
 type DmuxConf struct {
 	Name      string     `json:"name"`
 	DMuxItems []DmuxItem `json:"dmuxItems"`
@@ -86,7 +86,7 @@ type DmuxItem struct {
 	Connection interface{}    `json:connection`
 }
 
-//GetDmuxConf parses config file and return DmuxConf
+//GetDmuxConf parses Config file and return DmuxConf
 func (s DMuxConfigSetting) GetDmuxConf() DmuxConf {
 	raw, err := ioutil.ReadFile(s.FilePath)
 	if err != nil {
