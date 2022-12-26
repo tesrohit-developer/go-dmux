@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/flipkart-incubator/go-dmux/config"
 	"github.com/flipkart-incubator/go-dmux/metrics"
 	"log"
 	"os"
@@ -22,7 +23,7 @@ func main() {
 		path = args[0]
 	}
 
-	dconf := DMuxConfigSetting{
+	dconf := config.DMuxConfigSetting{
 		FilePath: path,
 	}
 	conf := dconf.GetDmuxConf()
@@ -39,7 +40,7 @@ func main() {
 	metrics.Start(conf.MetricPort)
 
 	for _, item := range conf.DMuxItems {
-		go func(connType ConnectionType, connConf interface{}, logDebug bool) {
+		go func(connType config.ConnectionType, connConf interface{}, logDebug bool) {
 			connType.Start(connConf, logDebug)
 		}(item.ConnType, item.Connection, dmuxLogging.EnableDebug)
 	}

@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"encoding/json"
@@ -18,6 +18,8 @@ const (
 	KafkaHTTP ConnectionType = "kafka_http"
 	//KafkaFoxtrot key to define kafka to foxtrot http sink
 	KafkaFoxtrot ConnectionType = "kafka_foxtrot"
+	//KafkaHTTPSideline key to define kafka to generic http sink
+	KafkaHTTPSideline ConnectionType = "kafka_http_sideline"
 )
 
 func (c ConnectionType) getConfig(data []byte) interface{} {
@@ -53,6 +55,8 @@ func (c ConnectionType) Start(conf interface{}, enableDebug bool) {
 		}
 		log.Println("Starting ", KafkaFoxtrot)
 		connObj.Run()
+	case KafkaHTTPSideline:
+
 	default:
 		panic("Invalid Connection Type")
 
