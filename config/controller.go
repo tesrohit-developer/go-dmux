@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	config2 "github.com/flipkart-incubator/go-dmux/config"
 	"log"
 	"net/http"
 
@@ -11,7 +10,7 @@ import (
 
 //Controller controller
 type Controller struct {
-	config config2.DmuxConf
+	config DmuxConf
 	router *mux.Router
 }
 
