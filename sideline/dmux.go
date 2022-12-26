@@ -21,8 +21,8 @@ func (d *DmuxCustom) DmuxStart(path string) {
 	}
 	conf := dconf.GetDmuxConf()
 
-	dmuxLogging := new(logging.DMuxLogging)
-	dmuxLogging.Start(conf.Logging)
+	//dmuxLogging := new(logging.DMuxLogging)
+	_ = new(logging.DMuxLogging)
 
 	log.Printf("config: %v", conf)
 
