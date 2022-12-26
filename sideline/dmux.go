@@ -21,8 +21,8 @@ func (d *DmuxCustom) DmuxStart(path string) {
 	}
 	conf := dconf.GetDmuxConf()
 
-	//dmuxLogging := new(logging.DMuxLogging)
-	_ = new(logging.DMuxLogging)
+	dmuxLogging := new(logging.DMuxLogging)
+	//_ = new(logging.DMuxLogging)
 
 	log.Printf("config: %v", conf)
 
@@ -31,9 +31,9 @@ func (d *DmuxCustom) DmuxStart(path string) {
 
 	for _, item := range conf.DMuxItems {
 		fmt.Println(item.ConnType)
-		/*go func(connType ConnectionType, connConf interface{}, logDebug bool) {
+		go func(connType co.ConnectionType, connConf interface{}, logDebug bool) {
 			connType.Start(connConf, logDebug)
-		}(item.ConnType, item.Connection, dmuxLogging.EnableDebug)*/
+		}(item.ConnType, item.Connection, dmuxLogging.EnableDebug)
 	}
 
 	//main thread halts. TODO make changes to listen to kill and reboot

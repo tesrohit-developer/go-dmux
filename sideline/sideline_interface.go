@@ -1,5 +1,7 @@
 package sideline
 
 type CheckMessageSideline interface {
-	SidelineMessage() string
+	CheckMessageSideline(key []byte) ([]byte, error)
+	SidelineMessage(msg []byte) SidelineMessageResponse
+	InitialisePlugin(conf []byte) error
 }

@@ -56,7 +56,12 @@ func (c ConnectionType) Start(conf interface{}, enableDebug bool) {
 		log.Println("Starting ", KafkaFoxtrot)
 		connObj.Run()
 	case KafkaHTTPSideline:
-
+		connObj := &connection.KafkaHTTPWithSidelineConn{
+			EnableDebugLog: enableDebug,
+			Conf:           conf,
+		}
+		log.Println("Starting ", KafkaFoxtrot)
+		connObj.Run()
 	default:
 		panic("Invalid Connection Type")
 
