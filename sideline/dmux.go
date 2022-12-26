@@ -2,7 +2,7 @@ package sideline
 
 import (
 	"fmt"
-	"github.com/flipkart-incubator/go-dmux/config"
+	c "github.com/flipkart-incubator/go-dmux/config"
 	"github.com/flipkart-incubator/go-dmux/logging"
 	"github.com/flipkart-incubator/go-dmux/metrics"
 	"log"
@@ -16,7 +16,7 @@ type DmuxCustom struct {
 func (d *DmuxCustom) DmuxStart(path string) {
 	//fmt.Println(checkMessageSideline.SidelineMessage())
 
-	dconf := config.DMuxConfigSetting{
+	dconf := c.DMuxConfigSetting{
 		FilePath: path,
 	}
 	conf := dconf.GetDmuxConf()
@@ -24,7 +24,7 @@ func (d *DmuxCustom) DmuxStart(path string) {
 	dmuxLogging := new(logging.DMuxLogging)
 	dmuxLogging.Start(conf.Logging)
 
-	c := config.Controller{config: conf}
+	c := c.Controller{config: conf}
 	go c.start()
 
 	log.Printf("config: %v", conf)
