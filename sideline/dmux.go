@@ -24,7 +24,7 @@ func (d *DmuxCustom) DmuxStart(path string) {
 	dmuxLogging := new(logging.DMuxLogging)
 	dmuxLogging.Start(conf.Logging)
 
-	c := Controller{config: conf}
+	c := config.Controller{config: conf}
 	go c.start()
 
 	log.Printf("config: %v", conf)
