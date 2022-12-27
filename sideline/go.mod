@@ -8,7 +8,9 @@ require github.com/flipkart-incubator/go-dmux/config v0.0.0
 
 require github.com/flipkart-incubator/go-dmux/logging v0.0.0
 
-//replace github.com/flipkart-incubator/go-dmux/connection v0.0.0 => ../connection
+replace github.com/flipkart-incubator/go-dmux/connection v0.0.0 => ../connection
+
+replace github.com/flipkart-incubator/go-dmux/core v0.0.0 => ../core
 
 replace github.com/flipkart-incubator/go-dmux/logging v0.0.0 => ../logging
 
@@ -23,3 +25,5 @@ replace github.com/flipkart-incubator/go-dmux/kafka/consumer-group v0.0.0 => ../
 replace github.com/flipkart-incubator/go-dmux/metrics v0.0.0 => ../metrics
 
 replace github.com/flipkart-incubator/go-dmux/config v0.0.0 => ../config
+
+replace github.com/flipkart-incubator/go-dmux/sideline-models v0.0.0 => ../sideline-models

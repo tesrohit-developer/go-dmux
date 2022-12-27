@@ -27,6 +27,8 @@ replace github.com/flipkart-incubator/go-dmux/kafka/consumer-group v0.0.0 => ../
 
 replace github.com/flipkart-incubator/go-dmux/sideline v0.0.0 => ../sideline
 
+replace github.com/flipkart-incubator/go-dmux/sideline-models v0.0.0 => ../sideline-models
+
 replace github.com/flipkart-incubator/go-dmux/metrics v0.0.0 => ../metrics
 
 replace github.com/flipkart-incubator/go-dmux/config v0.0.0 => ../config
