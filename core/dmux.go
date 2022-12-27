@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	source "github.com/flipkart-incubator/go-dmux/kafka"
-	sidelineModule "github.com/flipkart-incubator/go-dmux/sideline"
+	"github.com/flipkart-incubator/go-dmux/sideline-models"
 	"log"
 	"math"
 	"sync"
@@ -432,7 +432,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 					}
 					val := channelObject.Msg.(source.KafkaMsg)
 					log.Printf("Inside sideline channel for partition %d offset %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-					kafkaSidelineMessage := sidelineModule.SidelineMessage{
+					kafkaSidelineMessage := sideline_models.SidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
 						Partition:         val.GetRawMsg().Partition,
 						EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
@@ -450,12 +450,12 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						log.Printf("error in serde of kafkaSidelineMessage")
 						continue
 					}
-					sidelineMessageResponse := sidelineImpl.(sidelineModule.CheckMessageSideline).SidelineMessage(sidelineByteArray)
+					sidelineMessageResponse := sidelineImpl.(sideline_models.CheckMessageSideline).SidelineMessage(sidelineByteArray)
 					if !sidelineMessageResponse.Success {
-						var check sidelineModule.CheckMessageSidelineResponse
+						var check sideline_models.CheckMessageSidelineResponse
 						log.Printf(sidelineMessageResponse.ErrorMessage)
 						if sidelineMessageResponse.ConcurrentModificationError {
-							checkSidelineMessage := sidelineModule.SidelineMessage{
+							checkSidelineMessage := sideline_models.SidelineMessage{
 								GroupId:           string(val.GetRawMsg().Key),
 								Partition:         val.GetRawMsg().Partition,
 								EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
@@ -471,7 +471,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 								errors.New("error in serde of checkSidelineMessage")
 								continue
 							}
-							checkBytes, checkErr := sidelineImpl.(sidelineModule.CheckMessageSideline).
+							checkBytes, checkErr := sidelineImpl.(sideline_models.CheckMessageSideline).
 								CheckMessageSideline(checkSidelineMessageBytes)
 							err := json.Unmarshal(checkBytes, &check)
 							if err != nil {
@@ -497,10 +497,10 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 		go func(index int) {
 			for msg := range ch[index] {
 				val := msg.(source.KafkaMsg)
-				var check sidelineModule.CheckMessageSidelineResponse
+				var check sideline_models.CheckMessageSidelineResponse
 				for {
 					log.Printf("Checking if the message is already sidelined %d, %d from channel", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
-					checkSidelineMessage := sidelineModule.SidelineMessage{
+					checkSidelineMessage := sideline_models.SidelineMessage{
 						GroupId:           string(val.GetRawMsg().Key),
 						Partition:         val.GetRawMsg().Partition,
 						EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
@@ -516,7 +516,7 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 						errors.New("error in serde of checkSidelineMessage")
 						continue
 					}
-					checkBytes, checkErr := sidelineImpl.(sidelineModule.CheckMessageSideline).
+					checkBytes, checkErr := sidelineImpl.(sideline_models.CheckMessageSideline).
 						CheckMessageSideline(checkSidelineMessageBytes)
 					err := json.Unmarshal(checkBytes, &check)
 					if err != nil {

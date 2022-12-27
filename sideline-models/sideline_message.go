@@ -1,4 +1,4 @@
-package sideline
+package sideline_models
 
 type SidelineMessage struct {
 	GroupId           string

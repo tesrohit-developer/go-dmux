@@ -1,4 +1,4 @@
-package sideline
+package sideline_models
 
 type CheckMessageSideline interface {
 	CheckMessageSideline(key []byte) ([]byte, error)

@@ -1,4 +1,4 @@
-package sideline
+package sideline_models
 
 type CheckMessageSidelineResponse struct {
 	SidelineMessage bool
