@@ -2,8 +2,6 @@ module github.com/flipkart-incubator/go-dmux/offset_monitor
 
 go 1.12
 
-require github.com/flipkart-incubator/go-dmux/core v0.0.0
-
 require github.com/flipkart-incubator/go-dmux/kafka/consumer-group v0.0.0
 
 require (
