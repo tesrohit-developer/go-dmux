@@ -13,7 +13,7 @@ import (
 type DmuxCustom struct {
 }
 
-func (d *DmuxCustom) DmuxStart(path string) {
+func (d *DmuxCustom) DmuxStart(path string, sidelineImp interface{}) {
 	//fmt.Println(checkMessageSideline.SidelineMessage())
 
 	dconf := co.DMuxConfigSetting{
@@ -32,7 +32,7 @@ func (d *DmuxCustom) DmuxStart(path string) {
 	for _, item := range conf.DMuxItems {
 		fmt.Println(item.ConnType)
 		go func(connType co.ConnectionType, connConf interface{}, logDebug bool) {
-			connType.Start(connConf, logDebug)
+			connType.Start(connConf, logDebug, sidelineImp)
 		}(item.ConnType, item.Connection, dmuxLogging.EnableDebug)
 	}
 
