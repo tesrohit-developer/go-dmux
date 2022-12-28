@@ -1,4 +1,4 @@
-module github.com/tesrohit-developer/go-dmux/unsideline
+module github.com/flipkart-incubator/go-dmux/unsideline
 
 go 1.12
 
