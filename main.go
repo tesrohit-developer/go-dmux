@@ -38,7 +38,7 @@ func main() {
 
 	for _, item := range conf.DMuxItems {
 		go func(connType co.ConnectionType, connConf interface{}, logDebug bool) {
-			connType.Start(connConf, logDebug)
+			connType.Start(connConf, logDebug, nil)
 		}(item.ConnType, item.Connection, dmuxLogging.EnableDebug)
 	}
 
