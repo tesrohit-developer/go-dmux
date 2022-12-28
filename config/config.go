@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	sideline_models "github.com/flipkart-incubator/go-dmux/sideline-models"
 	"io/ioutil"
 	"log"
 	"os"
@@ -56,6 +57,14 @@ func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineImpl i
 		log.Println("Starting ", KafkaFoxtrot)
 		connObj.Run()
 	case KafkaHTTPSideline:
+		confBytes, err := json.Marshal(conf)
+		if err != nil {
+			log.Fatal("Error in InitialisePlugin " + err.Error())
+		}
+		initErr := sidelineImpl.(sideline_models.CheckMessageSideline).InitialisePlugin(confBytes)
+		if initErr != nil {
+			log.Fatal(initErr.Error())
+		}
 		connObj := &connection.KafkaHTTPWithSidelineConn{
 			EnableDebugLog: enableDebug,
 			Conf:           conf,
