@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/avast/retry-go/v4"
-	source "github.com/flipkart-incubator/go-dmux/kafka"
 	"github.com/flipkart-incubator/go-dmux/sideline-models"
 	"log"
 	"math"
@@ -91,6 +90,14 @@ type Source interface {
 	Generate(out chan<- interface{})
 	//Method used to trigger GracefulStop of Source
 	Stop()
+	// GetKey Method to get key for a message
+	GetKey(msg interface{}) []byte
+	// GetPartition Method to get partition for a message
+	GetPartition(msg interface{}) int32
+	// GetValue Method to get value for a message
+	GetValue(msg interface{}) []byte
+	// GetOffset Method to get offsets
+	GetOffset(msg interface{}) int64
 }
 
 //Distributor interface abstracts the Logic to distribute the load from Source
@@ -212,44 +219,9 @@ func getStopMsg() ControlMsg {
 	return c
 }
 
-/*func (d *Dmux) run(source Source, sink Sink) {
-
-	ch, wg := setupWithSideline(d.size, d.sinkQSize, d.batchSize, sink, d.version, d.sideline, )
-	in := make(chan interface{}, d.sourceQSize)
-	//start source
-	//TODO handle panic recovery if in channel is closed for shutdown
-	go source.Generate(in)
-
-	for {
-		select {
-		case data := <-in:
-			i := d.distribute.Distribute(data, len(ch))
-			// log.Printf("writing to channel %d len %d", i, len(ch[i]))
-			ch[i] <- data
-		case ctrl := <-d.control:
-			if ctrl.signal == Resize {
-				log.Println("processing resize")
-				shutdown(ch, wg)
-				resizeMeta := ctrl.meta.(ResizeMeta)
-				ch, wg = setup(resizeMeta.newSize, d.sinkQSize, d.batchSize, sink, d.version)
-				d.response <- ResponseMsg{ctrl.signal, Sucess}
-			} else if ctrl.signal == Stop {
-				log.Println("processing stop")
-				source.Stop()
-				shutdown(ch, wg)
-				close(in)
-				d.response <- ResponseMsg{ctrl.signal, Sucess}
-				d.err <- nil
-				return
-			}
-		}
-	}
-
-}*/
-
 func (d *Dmux) runWithSideline(source Source, sink Sink, sidelineImpl sideline_models.CheckMessageSideline) {
 
-	ch, wg := setupWithSideline(d.size, d.sinkQSize, d.batchSize, sink, d.version, d.sideline, sidelineImpl)
+	ch, wg := setupWithSideline(d.size, d.sinkQSize, d.batchSize, sink, source, d.version, d.sideline, sidelineImpl)
 	in := make(chan interface{}, d.sourceQSize)
 	//start source
 	//TODO handle panic recovery if in channel is closed for shutdown
@@ -266,7 +238,7 @@ func (d *Dmux) runWithSideline(source Source, sink Sink, sidelineImpl sideline_m
 				log.Println("processing resize")
 				shutdown(ch, wg)
 				resizeMeta := ctrl.meta.(ResizeMeta)
-				ch, wg = setupWithSideline(resizeMeta.newSize, d.sinkQSize, d.batchSize, sink, d.version, d.sideline, sidelineImpl)
+				ch, wg = setupWithSideline(resizeMeta.newSize, d.sinkQSize, d.batchSize, sink, source, d.version, d.sideline, sidelineImpl)
 				d.response <- ResponseMsg{ctrl.signal, Sucess}
 			} else if ctrl.signal == Stop {
 				log.Println("processing stop")
@@ -296,11 +268,11 @@ func shutdown(ch []chan interface{}, wg *sync.WaitGroup) {
 	}
 }
 */
-func setupWithSideline(size, qsize, batchSize int, sink Sink, version int, sideline Sideline, sidelineImpl sideline_models.CheckMessageSideline) ([]chan interface{}, *sync.WaitGroup) {
+func setupWithSideline(size, qsize, batchSize int, sink Sink, source Source, version int, sideline Sideline, sidelineImpl sideline_models.CheckMessageSideline) ([]chan interface{}, *sync.WaitGroup) {
 	if version == 1 && batchSize == 1 {
 		if sidelineImpl != nil {
 			log.Printf("Calling simpleSetupWithSideline")
-			return simpleSetupWithSideline(size, qsize, sink, sideline, sidelineImpl)
+			return simpleSetupWithSideline(size, qsize, sink, source, sideline, sidelineImpl)
 		} else {
 			log.Printf("Calling simpleSetup")
 			return simpleSetup(size, qsize, sink)
@@ -417,21 +389,24 @@ func sinkConsume(sink Sink, sinkChannel []chan ChannelObject, index int, sidelin
 	}
 }
 
-func mainChannelConsumption(ch []chan interface{}, index int, sideline Sideline, sidelineImpl sideline_models.CheckMessageSideline,
+func mainChannelConsumption(ch []chan interface{}, index int, source Source, sideline Sideline, sidelineImpl sideline_models.CheckMessageSideline,
 	sidelineChannel []chan ChannelObject, sinkChannel []chan ChannelObject, wg *sync.WaitGroup) {
 	for msg := range ch[index] {
-		val := msg.(source.KafkaMsg)
+		key := source.GetKey(msg)
+		partition := source.GetPartition(msg)
+		value := source.GetValue(msg)
+		offset := source.GetOffset(msg)
 		var check sideline_models.CheckMessageSidelineResponse
 		retry.Do(func() error {
-			log.Printf("Checking if the message is already sidelined %d, %d from channel", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+			log.Printf("Checking if the message is already sidelined %d, %d from channel", partition, offset)
 			checkSidelineMessage := sideline_models.SidelineMessage{
-				GroupId:           string(val.GetRawMsg().Key),
-				Partition:         val.GetRawMsg().Partition,
-				EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
-				Offset:            val.GetRawMsg().Offset,
+				GroupId:           string(key),
+				Partition:         partition,
+				EntityId:          string(key) + sideline.ConsumerGroupName + sideline.ClusterName,
+				Offset:            offset,
 				ConsumerGroupName: sideline.ConsumerGroupName,
 				ClusterName:       sideline.ClusterName,
-				Message:           val.GetRawMsg().Value,
+				Message:           value,
 				ConnectionType:    sideline.ConnectionType,
 			}
 			checkSidelineMessageBytes, checkSidelineMessageErr := json.Marshal(checkSidelineMessage)
@@ -449,7 +424,7 @@ func mainChannelConsumption(ch []chan interface{}, index int, sideline Sideline,
 				log.Printf("Error in checking if message is sidelined " + checkErr.Error())
 				return errors.New("Error in checking if message is sidelined " + checkErr.Error())
 			}
-			log.Printf("Message if already sidelined %t %d %d", check.SidelineMessage, val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+			log.Printf("Message if already sidelined %t %d %d", check.SidelineMessage, partition, offset)
 			if check.SidelineMessage {
 				sendToSidelineChannel := ChannelObject{
 					Msg:      msg,
@@ -471,7 +446,7 @@ func mainChannelConsumption(ch []chan interface{}, index int, sideline Sideline,
 	wg.Done()
 }
 
-func pushToSideline(sidelineChannel []chan ChannelObject, index int, sideline Sideline, sidelineImpl sideline_models.CheckMessageSideline) {
+func pushToSideline(sidelineChannel []chan ChannelObject, index int, source Source, sideline Sideline, sidelineImpl sideline_models.CheckMessageSideline) {
 	for channelObject := range sidelineChannel[index] {
 		retry.Do(
 			func() error {
@@ -481,16 +456,19 @@ func pushToSideline(sidelineChannel []chan ChannelObject, index int, sideline Si
 					log.Printf("error in serde of SidelineMeta")
 					return errors.New("error in serde of SidelineMeta")
 				}
-				val := channelObject.Msg.(source.KafkaMsg)
-				log.Printf("Inside sideline channel for partition %d offset %d", val.GetRawMsg().Partition, val.GetRawMsg().Offset)
+				val := source.GetValue(channelObject.Msg)
+				key := source.GetKey(channelObject.Msg)
+				partition := source.GetPartition(channelObject.Msg)
+				offset := source.GetOffset(channelObject.Msg)
+				log.Printf("Inside sideline channel for partition %d offset %d", partition, offset)
 				kafkaSidelineMessage := sideline_models.SidelineMessage{
-					GroupId:           string(val.GetRawMsg().Key),
-					Partition:         val.GetRawMsg().Partition,
-					EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
-					Offset:            val.GetRawMsg().Offset,
+					GroupId:           string(key),
+					Partition:         partition,
+					EntityId:          string(key) + sideline.ConsumerGroupName + sideline.ClusterName,
+					Offset:            offset,
 					ConsumerGroupName: sideline.ConsumerGroupName,
 					ClusterName:       sideline.ClusterName,
-					Message:           val.GetRawMsg().Value,
+					Message:           val,
 					Version:           channelObject.Version,
 					ConnectionType:    sideline.ConnectionType,
 					SidelineMeta:      sidelineMetaByteArray,
@@ -507,13 +485,13 @@ func pushToSideline(sidelineChannel []chan ChannelObject, index int, sideline Si
 					log.Printf(sidelineMessageResponse.ErrorMessage)
 					if sidelineMessageResponse.ConcurrentModificationError != nil {
 						checkSidelineMessage := sideline_models.SidelineMessage{
-							GroupId:           string(val.GetRawMsg().Key),
-							Partition:         val.GetRawMsg().Partition,
-							EntityId:          string(val.GetRawMsg().Key) + sideline.ConsumerGroupName + sideline.ClusterName,
-							Offset:            val.GetRawMsg().Offset,
+							GroupId:           string(key),
+							Partition:         partition,
+							EntityId:          string(key) + sideline.ConsumerGroupName + sideline.ClusterName,
+							Offset:            offset,
 							ConsumerGroupName: sideline.ConsumerGroupName,
 							ClusterName:       sideline.ClusterName,
-							Message:           val.GetRawMsg().Value,
+							Message:           val,
 							ConnectionType:    sideline.ConnectionType,
 						}
 						checkSidelineMessageBytes, checkSidelineMessageErr := json.Marshal(checkSidelineMessage)
@@ -543,7 +521,7 @@ func pushToSideline(sidelineChannel []chan ChannelObject, index int, sideline Si
 	}
 }
 
-func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, sidelineImpl sideline_models.CheckMessageSideline) ([]chan interface{}, *sync.WaitGroup) {
+func simpleSetupWithSideline(size, qsize int, sink Sink, source Source, sideline Sideline, sidelineImpl sideline_models.CheckMessageSideline) ([]chan interface{}, *sync.WaitGroup) {
 	wg := new(sync.WaitGroup)
 	wg.Add(size)
 	ch := make([]chan interface{}, size)
@@ -557,12 +535,12 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, sideline Sideline, side
 
 	for i := 0; i < size; i++ {
 		sidelineChannel[i] = make(chan ChannelObject, qsize)
-		pushToSideline(sidelineChannel, i, sideline, sidelineImpl)
+		pushToSideline(sidelineChannel, i, source, sideline, sidelineImpl)
 	}
 
 	for i := 0; i < size; i++ {
 		ch[i] = make(chan interface{}, qsize)
-		mainChannelConsumption(ch, i, sideline, sidelineImpl, sidelineChannel, sinkChannel, wg)
+		mainChannelConsumption(ch, i, source, sideline, sidelineImpl, sidelineChannel, sinkChannel, wg)
 	}
 	return ch, wg
 }
