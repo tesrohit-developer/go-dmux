@@ -64,7 +64,7 @@ func (c *KafkaHTTPConn) Run() {
 	d := core.GetDistribution(conf.Dmux.DistributorType, h)
 
 	dmux := core.GetDmux(conf.Dmux, d)
-	dmux.Connect(src, sk)
+	dmux.ConnectWithSideline(src, sk, nil)
 	dmux.Join()
 }
 

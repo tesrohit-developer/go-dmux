@@ -199,7 +199,7 @@ func (h *HTTPSink) retryExecute(method, url string, headers map[string]string,
 			}
 			count = count + 1
 			if retries != math.MaxInt32 && count > retries {
-				return outcome, errors.New("exceeded retries")
+				return outcome, core.RetriesExceed
 			}
 		}
 		log.Printf("retry in execute %s \t %s ", method, url)

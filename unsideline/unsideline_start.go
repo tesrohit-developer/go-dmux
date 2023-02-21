@@ -50,7 +50,7 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
-func UnsidelineStart(scanImplArg interface{}, unsidelineImplArg interface{}, configPath string) {
+func UnsidelineStart(scanImplArg Scan, unsidelineImplArg Unsideline, configPath string) {
 	log.Println("Hi starting the API")
 
 	raw, err := ioutil.ReadFile(configPath)
@@ -62,8 +62,8 @@ func UnsidelineStart(scanImplArg interface{}, unsidelineImplArg interface{}, con
 	if confSerdeErr != nil {
 		log.Fatal(confSerdeErr.Error())
 	}
-	scanImpl = scanImplArg.(Scan)
-	unsidelineImpl = unsidelineImplArg.(Unsideline)
+	scanImpl = scanImplArg
+	unsidelineImpl = unsidelineImplArg
 	r := mux.NewRouter()
 	r.HandleFunc("/scan/{startRow}/{endRow}", scan)
 	r.HandleFunc("/unsideline/{key}", unsideline)

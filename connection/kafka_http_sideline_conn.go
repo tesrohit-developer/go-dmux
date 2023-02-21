@@ -2,12 +2,12 @@ package connection
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/Shopify/sarama"
 	"github.com/flipkart-incubator/go-dmux/core"
 	sink "github.com/flipkart-incubator/go-dmux/http"
 	source "github.com/flipkart-incubator/go-dmux/kafka"
 	"github.com/flipkart-incubator/go-dmux/offset_monitor"
+	sideline_models "github.com/flipkart-incubator/go-dmux/sideline-models"
 	"log"
 	"os"
 )
@@ -31,7 +31,7 @@ func (c *KafkaHTTPWithSidelineConn) getConfiguration() *KafkaHTTPConnConfig {
 //Run method to start this Connection from source to sink
 func (c *KafkaHTTPWithSidelineConn) Run() {
 	conf := c.getConfiguration()
-	fmt.Println("starting go-dmux with conf", conf)
+	log.Println("starting go-dmux with conf", conf)
 	if c.EnableDebugLog {
 		// enable sarama logs if booted with debug logs
 		log.Println("enabling sarama logs")
@@ -52,6 +52,6 @@ func (c *KafkaHTTPWithSidelineConn) Run() {
 	d := core.GetDistribution(conf.Dmux.DistributorType, h)
 
 	dmux := core.GetDmux(conf.Dmux, d)
-	dmux.ConnectWithSideline(src, sk, c.SidelineImpl)
+	dmux.ConnectWithSideline(src, sk, c.SidelineImpl.(sideline_models.CheckMessageSideline))
 	dmux.Join()
 }

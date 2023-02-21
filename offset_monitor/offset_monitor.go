@@ -3,20 +3,17 @@ package offset_monitor
 import (
 	"context"
 	"github.com/Shopify/sarama"
+	"github.com/flipkart-incubator/go-dmux/core"
 	consumergroup "github.com/flipkart-incubator/go-dmux/kafka/consumer-group"
 	"github.com/flipkart-incubator/go-dmux/metrics"
 	"strconv"
 	"time"
 )
 
-type Duration struct {
-	time.Duration
-}
-
 type OffMonitorConf struct {
-	SourceSinkMonitorEnabled       bool     `json:"source_sink_monitor_enabled"`
-	ProducerConsumerMonitorEnabled bool     `json:"producer_consumer_monitor_enabled"`
-	OffPollingInterval             Duration `json:"offset_polling_interval"`
+	SourceSinkMonitorEnabled       bool          `json:"source_sink_monitor_enabled"`
+	ProducerConsumerMonitorEnabled bool          `json:"producer_consumer_monitor_enabled"`
+	OffPollingInterval             core.Duration `json:"offset_polling_interval"`
 }
 
 type OffMonitor struct {
