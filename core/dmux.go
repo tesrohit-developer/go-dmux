@@ -369,7 +369,7 @@ func simpleSetup(size, qsize int, sink Sink) ([]chan interface{}, *sync.WaitGrou
 func sinkConsume(sink Sink, sinkChannel []chan ChannelObject, index int, sideline Sideline, sidelineChannel []chan ChannelObject) {
 	sk := sink.Clone()
 	expBackOff := backoff.NewExponentialBackOff()
-	expBackOff.MaxElapsedTime = math.MaxInt32 * time.Minute
+	//expBackOff.MaxElapsedTime = math.MaxInt32 * time.Minute
 	for channelObject := range sinkChannel[index] {
 		log.Printf("Inside Sink channel ")
 		retryError := backoff.Retry(func() error {
@@ -403,7 +403,7 @@ func mainChannelConsumption(ch []chan interface{}, index int, source Source, sid
 		offset := source.GetOffset(msg)
 		var check sideline_models.CheckMessageSidelineResponse
 		expBackOff := backoff.NewExponentialBackOff()
-		expBackOff.MaxElapsedTime = math.MaxInt32 * time.Minute
+		//expBackOff.MaxElapsedTime = math.MaxInt32 * time.Minute
 		retryError := backoff.Retry(func() error {
 			log.Printf("Checking if the message is already sidelined %d, %d from channel", partition, offset)
 			checkSidelineMessage := sideline_models.SidelineMessage{
@@ -459,7 +459,7 @@ func mainChannelConsumption(ch []chan interface{}, index int, source Source, sid
 func pushToSideline(sidelineChannel []chan ChannelObject, index int, source Source, sideline Sideline, sidelineImpl sideline_models.CheckMessageSideline) {
 	for channelObject := range sidelineChannel[index] {
 		expBackOff := backoff.NewExponentialBackOff()
-		expBackOff.MaxElapsedTime = math.MaxInt32 * time.Minute
+		//expBackOff.MaxElapsedTime = math.MaxInt32 * time.Minute
 		retryError := backoff.Retry(
 			func() error {
 				sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
