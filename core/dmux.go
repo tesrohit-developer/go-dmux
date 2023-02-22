@@ -542,20 +542,20 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, source Source, sideline
 	ch := make([]chan interface{}, size)
 	sidelineChannel := make([]chan ChannelObject, size)
 	sinkChannel := make([]chan ChannelObject, size)
-
+	log.Printf("Inside simpleSetupWithSideline")
 	for i := 0; i < size; i++ {
 		sinkChannel[i] = make(chan ChannelObject, qsize)
-		sinkConsume(sink, sinkChannel, i, sideline, sidelineChannel)
+		go sinkConsume(sink, sinkChannel, i, sideline, sidelineChannel)
 	}
 
 	for i := 0; i < size; i++ {
 		sidelineChannel[i] = make(chan ChannelObject, qsize)
-		pushToSideline(sidelineChannel, i, source, sideline, sidelineImpl)
+		go pushToSideline(sidelineChannel, i, source, sideline, sidelineImpl)
 	}
 
 	for i := 0; i < size; i++ {
 		ch[i] = make(chan interface{}, qsize)
-		mainChannelConsumption(ch, i, source, sideline, sidelineImpl, sidelineChannel, sinkChannel, wg)
+		go mainChannelConsumption(ch, i, source, sideline, sidelineImpl, sidelineChannel, sinkChannel, wg)
 	}
 	return ch, wg
 }
