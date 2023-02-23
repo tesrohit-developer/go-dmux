@@ -19,8 +19,6 @@ const (
 	KafkaHTTP ConnectionType = "kafka_http"
 	//KafkaFoxtrot key to define kafka to foxtrot http sink
 	KafkaFoxtrot ConnectionType = "kafka_foxtrot"
-	//KafkaHTTPSideline key to define kafka to generic http sink
-	KafkaHTTPSideline ConnectionType = "kafka_http_sideline"
 )
 
 func (c ConnectionType) getConfig(data []byte) interface{} {
@@ -43,12 +41,31 @@ func (c ConnectionType) getConfig(data []byte) interface{} {
 func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineImpl interface{}) {
 	switch c {
 	case KafkaHTTP:
-		connObj := &connection.KafkaHTTPConn{
-			EnableDebugLog: enableDebug,
-			Conf:           conf,
+		if sidelineImpl != nil {
+			confBytes, err := json.Marshal(conf)
+			if err != nil {
+				log.Fatal("Error in InitialisePlugin " + err.Error())
+			}
+			initErr := sidelineImpl.(sideline_models.CheckMessageSideline).InitialisePlugin(confBytes)
+			if initErr != nil {
+				log.Fatal(initErr.Error())
+			}
+			connObj := &connection.KafkaHTTPConn{
+				EnableDebugLog: enableDebug,
+				Conf:           conf,
+				SidelineImpl:   sidelineImpl,
+			}
+			log.Println("Starting ", KafkaFoxtrot)
+			connObj.Run()
+		} else {
+			connObj := &connection.KafkaHTTPConn{
+				EnableDebugLog: enableDebug,
+				Conf:           conf,
+				SidelineImpl:   nil,
+			}
+			log.Println("Starting ", KafkaHTTP)
+			connObj.Run()
 		}
-		log.Println("Starting ", KafkaHTTP)
-		connObj.Run()
 	case KafkaFoxtrot:
 		connObj := &connection.KafkaFoxtrotConn{
 			EnableDebugLog: enableDebug,
@@ -56,25 +73,8 @@ func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineImpl i
 		}
 		log.Println("Starting ", KafkaFoxtrot)
 		connObj.Run()
-	case KafkaHTTPSideline:
-		confBytes, err := json.Marshal(conf)
-		if err != nil {
-			log.Fatal("Error in InitialisePlugin " + err.Error())
-		}
-		initErr := sidelineImpl.(sideline_models.CheckMessageSideline).InitialisePlugin(confBytes)
-		if initErr != nil {
-			log.Fatal(initErr.Error())
-		}
-		connObj := &connection.KafkaHTTPWithSidelineConn{
-			EnableDebugLog: enableDebug,
-			Conf:           conf,
-			SidelineImpl:   sidelineImpl,
-		}
-		log.Println("Starting ", KafkaFoxtrot)
-		connObj.Run()
 	default:
 		panic("Invalid Connection Type")
-
 	}
 
 }
