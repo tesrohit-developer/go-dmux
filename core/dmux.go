@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/cenkalti/backoff"
-	"github.com/flipkart-incubator/go-dmux/sideline-models"
+	"github.com/flipkart-incubator/go-dmux/sideline_models"
 	"log"
 	"math"
 	"sync"
@@ -278,7 +278,7 @@ func setupWithSideline(size, qsize, batchSize int, sink Sink, source Source, ver
 			return simpleSetup(size, qsize, sink)
 		}
 	} else {
-		if sidelineImpl != nil {
+		if sidelineImpl == nil {
 			return batchSetup(size, qsize, batchSize, sink, version)
 		}
 		log.Fatal("Not Supported sidelining for batching")
@@ -377,7 +377,7 @@ func sinkConsume(sink Sink, sinkChannel []chan ChannelObject, index int, sidelin
 			if consumeError == nil {
 				return nil
 			}
-			if consumeError != nil && consumeError == RetriesExceed {
+			if consumeError != nil && consumeError.Error() == RetriesExceed {
 				sendToSidelineChannel := ChannelObject{
 					Msg:      channelObject.Msg,
 					Sideline: channelObject.Sideline,
@@ -386,10 +386,10 @@ func sinkConsume(sink Sink, sinkChannel []chan ChannelObject, index int, sidelin
 				sidelineChannel[index] <- sendToSidelineChannel
 				return nil
 			}
-			return errors.New("failed in sink consume")
+			return errors.New("failed in sink consume " + consumeError.Error())
 		}, expBackOff)
 		if retryError != nil {
-			log.Fatal("Ideally this should not happen in sinkConsume")
+			log.Fatal("Ideally this should not happen in sinkConsume" + retryError.Error())
 		}
 	}
 }
@@ -450,24 +450,18 @@ func mainChannelConsumption(ch []chan interface{}, index int, source Source, sid
 			}
 		}, expBackOff)
 		if retryError != nil {
-			log.Fatal("Ideally this should not happen in mainChannelConsumption")
+			log.Fatal("Ideally this should not happen in mainChannelConsumption" + retryError.Error())
 		}
 	}
 	wg.Done()
 }
 
-func pushToSideline(sidelineChannel []chan ChannelObject, index int, source Source, sideline Sideline, sidelineImpl sideline_models.CheckMessageSideline) {
+func pushToSideline(sidelineChannel []chan ChannelObject, index int, source Source, sideline Sideline, sidelineMetaByteArray []byte, sidelineImpl sideline_models.CheckMessageSideline) {
 	for channelObject := range sidelineChannel[index] {
 		expBackOff := backoff.NewExponentialBackOff()
 		//expBackOff.MaxElapsedTime = math.MaxInt32 * time.Minute
 		retryError := backoff.Retry(
 			func() error {
-				sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
-				if sidelineMetaByteArrayErr != nil {
-					//TODO : think about this
-					log.Printf("error in serde of SidelineMeta")
-					return errors.New("error in serde of SidelineMeta")
-				}
 				val := source.GetValue(channelObject.Msg)
 				key := source.GetKey(channelObject.Msg)
 				partition := source.GetPartition(channelObject.Msg)
@@ -550,7 +544,11 @@ func simpleSetupWithSideline(size, qsize int, sink Sink, source Source, sideline
 
 	for i := 0; i < size; i++ {
 		sidelineChannel[i] = make(chan ChannelObject, qsize)
-		go pushToSideline(sidelineChannel, i, source, sideline, sidelineImpl)
+		sidelineMetaByteArray, sidelineMetaByteArrayErr := json.Marshal(sideline.SidelineMeta)
+		if sidelineMetaByteArrayErr != nil {
+			log.Fatal("error in serde of SidelineMeta")
+		}
+		go pushToSideline(sidelineChannel, i, source, sideline, sidelineMetaByteArray, sidelineImpl)
 	}
 
 	for i := 0; i < size; i++ {

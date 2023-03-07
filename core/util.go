@@ -117,4 +117,4 @@ func Contains(a []int, x int) bool {
 	return false
 }
 
-var RetriesExceed = errors.New("exceeded retries")
+const RetriesExceed string = "exceeded retries"

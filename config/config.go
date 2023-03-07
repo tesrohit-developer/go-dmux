@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	sideline_models "github.com/flipkart-incubator/go-dmux/sideline-models"
+	sideline_models "github.com/flipkart-incubator/go-dmux/sideline_models"
 	"io/ioutil"
 	"log"
 	"os"
@@ -50,22 +50,14 @@ func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineImpl i
 			if initErr != nil {
 				log.Fatal(initErr.Error())
 			}
-			connObj := &connection.KafkaHTTPConn{
-				EnableDebugLog: enableDebug,
-				Conf:           conf,
-				SidelineImpl:   sidelineImpl,
-			}
-			log.Println("Starting ", KafkaFoxtrot)
-			connObj.Run()
-		} else {
-			connObj := &connection.KafkaHTTPConn{
-				EnableDebugLog: enableDebug,
-				Conf:           conf,
-				SidelineImpl:   nil,
-			}
-			log.Println("Starting ", KafkaHTTP)
-			connObj.Run()
 		}
+		connObj := &connection.KafkaHTTPConn{
+			EnableDebugLog: enableDebug,
+			Conf:           conf,
+			SidelineImpl:   sidelineImpl,
+		}
+		log.Println("Starting ", KafkaHTTP)
+		connObj.Run()
 	case KafkaFoxtrot:
 		connObj := &connection.KafkaFoxtrotConn{
 			EnableDebugLog: enableDebug,
