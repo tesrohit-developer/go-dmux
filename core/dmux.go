@@ -431,7 +431,11 @@ func mainChannelConsumption(ch []chan interface{}, index int, source Source, sid
 				log.Printf("Error in checking if message is sidelined " + checkErr.Error())
 				return errors.New("Error in checking if message is sidelined " + checkErr.Error())
 			}
-			log.Printf("Message if already sidelined %t %d %d", check.SidelineMessage, partition, offset)
+			log.Printf("Message if already sidelined %t %d %d", check.MessagePresentInSideline, partition, offset)
+			if check.MessagePresentInSideline {
+				return nil
+			}
+			log.Printf("SidelineMessage %t %d %d", check.SidelineMessage, partition, offset)
 			if check.SidelineMessage {
 				sendToSidelineChannel := ChannelObject{
 					Msg:      msg,

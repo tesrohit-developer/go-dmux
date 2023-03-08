@@ -1,8 +1,9 @@
 package sideline_models
 
 type CheckMessageSidelineResponse struct {
-	SidelineMessage bool
-	Version         int32
+	SidelineMessage          bool
+	Version                  int32
+	MessagePresentInSideline bool
 }
 
 type KafkaHttpSidelineMeta struct {
