@@ -1,27 +1,27 @@
-package sideline
+package sideline_impls
 
 import (
 	"encoding/json"
-	"github.com/flipkart-incubator/go-dmux/sideline_impls"
+	"github.com/flipkart-incubator/go-dmux/sideline"
 )
 
 type CheckMessageSidelineImpl struct {
 }
 
 func sidelineInitExample() {
-	custom := sideline_impls.DmuxCustom{}
+	custom := DmuxCustom{}
 	sidelineImpl := &CheckMessageSidelineImpl{}
 	path := "" // config path
 	custom.DmuxStart(path, sidelineImpl)
 }
 
 func (c *CheckMessageSidelineImpl) CheckMessageSideline(key []byte) ([]byte, error) {
-	checkMessageSidelineResponse := CheckMessageSidelineResponse{}
+	checkMessageSidelineResponse := sideline.CheckMessageSidelineResponse{}
 	return json.Marshal(checkMessageSidelineResponse)
 }
 
-func (c *CheckMessageSidelineImpl) SidelineMessage(msg []byte) SidelineMessageResponse {
-	sidelineMessageResponse := SidelineMessageResponse{}
+func (c *CheckMessageSidelineImpl) SidelineMessage(msg []byte) sideline.SidelineMessageResponse {
+	sidelineMessageResponse := sideline.SidelineMessageResponse{}
 	return sidelineMessageResponse
 }
 
