@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/flipkart-incubator/go-dmux/offset_monitor"
-	sideline_models "github.com/flipkart-incubator/go-dmux/sideline_models"
+	sideline_models "github.com/flipkart-incubator/go-dmux/sideline_module"
 	"hash/fnv"
 	"log"
 	"os"

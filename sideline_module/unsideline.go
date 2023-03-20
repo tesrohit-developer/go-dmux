@@ -1,8 +1,7 @@
-package unsideline
+package sideline_module
 
 import (
 	"encoding/json"
-	unsideline_models "github.com/flipkart-incubator/go-dmux/unsideline-models"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
@@ -15,7 +14,7 @@ var unsidelineImpl Unsideline
 
 func scan(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	var request = unsideline_models.ScanWithStartRowEndRowRequest{
+	var request = ScanWithStartRowEndRowRequest{
 		StartKey: vars["startRow"],
 		EndKey:   vars["endRow"],
 	}
@@ -31,7 +30,7 @@ func scan(w http.ResponseWriter, r *http.Request) {
 
 func unsideline(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	var request = unsideline_models.UnsidelineByKeyRequest{
+	var request = UnsidelineByKeyRequest{
 		Key: vars["key"],
 	}
 	rows, err := unsidelineImpl.UnsidelineByKey(request)
@@ -57,7 +56,7 @@ func UnsidelineStart(scanImplArg Scan, unsidelineImplArg Unsideline, configPath 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	var conf unsideline_models.UnsidelineContainerConfig
+	var conf UnsidelineContainerConfig
 	confSerdeErr := json.Unmarshal(raw, &conf)
 	if confSerdeErr != nil {
 		log.Fatal(confSerdeErr.Error())
@@ -69,4 +68,34 @@ func UnsidelineStart(scanImplArg Scan, unsidelineImplArg Unsideline, configPath 
 	r.HandleFunc("/unsideline/{key}", unsideline)
 	r.HandleFunc("/healthCheck", healthCheck)
 	log.Fatal(http.ListenAndServe(":"+strconv.FormatInt(conf.Port, 10), r))
+}
+
+type Scan interface {
+	ScanWithStartRowEndRow(request ScanWithStartRowEndRowRequest) ([]string, error)
+	ScanWithStartTimeEndTime(request ScanWithStartTimeEndTimeRequest) ([]string, error)
+}
+
+type Unsideline interface {
+	UnsidelineByKey(request UnsidelineByKeyRequest) (string, error)
+}
+
+type ScanWithStartRowEndRowRequest struct {
+	StartKey string
+	EndKey   string
+}
+
+type ScanWithStartTimeEndTimeRequest struct {
+	StartTime int64
+	EndTime   int64
+	StartKey  string
+	EndKey    string
+}
+
+type UnsidelineByKeyRequest struct {
+	Key      string
+	DmuxItem string
+}
+
+type UnsidelineContainerConfig struct {
+	Port int64 `json:"port"`
 }
