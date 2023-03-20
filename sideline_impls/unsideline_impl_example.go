@@ -26,5 +26,5 @@ func unsidelineInitExample() {
 	scanImpl := &ScanImpl{}
 	unsidelineImpl := &UnsidelineImpl{}
 	path := "" // config path
-	sideline.unsideline.UnsidelineStart(scanImpl, unsidelineImpl, path)
+	sideline.UnsidelineStart(scanImpl, unsidelineImpl, path)
 }
