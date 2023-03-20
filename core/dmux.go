@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/cenkalti/backoff"
-	"github.com/flipkart-incubator/go-dmux/sideline_module"
+	"github.com/flipkart-incubator/go-dmux/sideline"
 	"log"
 	"math"
 	"sync"
@@ -166,7 +166,7 @@ func GetDmux(conf DmuxConf, d Distributor) *Dmux {
 }*/
 
 //Connect method holds Dmux logic used to Connect Source to Sink With Sideline
-func (d *Dmux) ConnectWithSideline(source Source, sink Sink, sidelineImpl sideline_module.CheckMessageSideline) {
+func (d *Dmux) ConnectWithSideline(source Source, sink Sink, sidelineImpl sideline.CheckMessageSideline) {
 	go d.runWithSideline(source, sink, sidelineImpl)
 }
 
@@ -219,7 +219,7 @@ func getStopMsg() ControlMsg {
 	return c
 }
 
-func (d *Dmux) runWithSideline(source Source, sink Sink, sidelineImpl sideline_module.CheckMessageSideline) {
+func (d *Dmux) runWithSideline(source Source, sink Sink, sidelineImpl sideline.CheckMessageSideline) {
 
 	ch, wg := setupWithSideline(d.size, d.sinkQSize, d.batchSize, sink, source, d.version, d.sideline, sidelineImpl)
 	in := make(chan interface{}, d.sourceQSize)
@@ -268,7 +268,7 @@ func shutdown(ch []chan interface{}, wg *sync.WaitGroup) {
 	}
 }
 */
-func setupWithSideline(size, qsize, batchSize int, sink Sink, source Source, version int, sideline Sideline, sidelineImpl sideline_module.CheckMessageSideline) ([]chan interface{}, *sync.WaitGroup) {
+func setupWithSideline(size, qsize, batchSize int, sink Sink, source Source, version int, sideline Sideline, sidelineImpl sideline.CheckMessageSideline) ([]chan interface{}, *sync.WaitGroup) {
 	if version == 1 && batchSize == 1 {
 		if sidelineImpl != nil {
 			log.Printf("Calling simpleSetupWithSideline")
@@ -394,7 +394,7 @@ func sinkConsume(sink Sink, sinkChannel []chan ChannelObject, index int, sidelin
 	}
 }
 
-func mainChannelConsumption(ch []chan interface{}, index int, source Source, sideline Sideline, sidelineImpl sideline_module.CheckMessageSideline,
+func mainChannelConsumption(ch []chan interface{}, index int, source Source, sideline Sideline, sidelineImpl sideline.CheckMessageSideline,
 	sidelineChannel []chan ChannelObject, sinkChannel []chan ChannelObject, wg *sync.WaitGroup) {
 	for msg := range ch[index] {
 		key := source.GetKey(msg)
@@ -460,7 +460,7 @@ func mainChannelConsumption(ch []chan interface{}, index int, source Source, sid
 	wg.Done()
 }
 
-func pushToSideline(sidelineChannel []chan ChannelObject, index int, source Source, sideline Sideline, sidelineMetaByteArray []byte, sidelineImpl sideline_module.CheckMessageSideline) {
+func pushToSideline(sidelineChannel []chan ChannelObject, index int, source Source, sideline Sideline, sidelineMetaByteArray []byte, sidelineImpl sideline.CheckMessageSideline) {
 	for channelObject := range sidelineChannel[index] {
 		expBackOff := backoff.NewExponentialBackOff()
 		//expBackOff.MaxElapsedTime = math.MaxInt32 * time.Minute
@@ -534,7 +534,7 @@ func pushToSideline(sidelineChannel []chan ChannelObject, index int, source Sour
 	}
 }
 
-func simpleSetupWithSideline(size, qsize int, sink Sink, source Source, sideline Sideline, sidelineImpl sideline_module.CheckMessageSideline) ([]chan interface{}, *sync.WaitGroup) {
+func simpleSetupWithSideline(size, qsize int, sink Sink, source Source, sideline Sideline, sidelineImpl sideline.CheckMessageSideline) ([]chan interface{}, *sync.WaitGroup) {
 	wg := new(sync.WaitGroup)
 	wg.Add(size)
 	ch := make([]chan interface{}, size)

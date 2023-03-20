@@ -1,4 +1,4 @@
-package sideline_module
+package sideline
 
 type ScanImpl struct {
 }

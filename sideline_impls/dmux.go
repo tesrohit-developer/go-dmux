@@ -1,4 +1,4 @@
-package sideline_module
+package sideline_impls
 
 import (
 	co "github.com/flipkart-incubator/go-dmux/config"

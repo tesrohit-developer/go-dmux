@@ -1,12 +1,15 @@
-package sideline_module
+package sideline
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/flipkart-incubator/go-dmux/sideline_impls"
+)
 
 type CheckMessageSidelineImpl struct {
 }
 
 func sidelineInitExample() {
-	custom := DmuxCustom{}
+	custom := sideline_impls.DmuxCustom{}
 	sidelineImpl := &CheckMessageSidelineImpl{}
 	path := "" // config path
 	custom.DmuxStart(path, sidelineImpl)

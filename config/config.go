@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	sideline_models "github.com/flipkart-incubator/go-dmux/sideline_module"
+	sideline_models "github.com/flipkart-incubator/go-dmux/sideline"
 	"io/ioutil"
 	"log"
 	"os"
