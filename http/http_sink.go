@@ -128,9 +128,9 @@ func (h *HTTPSink) BatchConsume(msgs []interface{}, version int) {
 		//retry Pre till you succede infinitely
 		h.retryPre(msg, url)
 	}
-
+	var respCodes []int
 	//retry Execute till you succede based on retry config
-	status, err := h.retryExecute(h.conf.Method, url, headers, payload, responseCodeEvaluation, math.MaxInt32)
+	status, err := h.retryExecute(h.conf.Method, url, headers, payload, responseCodeEvaluation, math.MaxInt32, respCodes)
 
 	if !status && err != nil {
 		log.Fatal("Error in executing " + err.Error())
@@ -146,7 +146,7 @@ func (h *HTTPSink) BatchConsume(msgs []interface{}, version int) {
 //Consume is implementation for Single message Consumption.
 //This infinitely retries pre and post hooks, but finetly retries HTTPCall
 //for status. status == true is determined by responseCode 2xx
-func (h *HTTPSink) Consume(msg interface{}, retries int) error {
+func (h *HTTPSink) Consume(msg interface{}, retries int, sidelineResponseCodes []int) error {
 
 	data := msg.(HTTPMsg)
 	url := data.GetURL(h.conf.Endpoint)
@@ -157,7 +157,7 @@ func (h *HTTPSink) Consume(msg interface{}, retries int) error {
 	h.retryPre(msg, url)
 
 	//retry Execute till you succede based on retry config
-	status, err := h.retryExecute(h.conf.Method, url, headers, payload, responseCodeEvaluation, retries)
+	status, err := h.retryExecute(h.conf.Method, url, headers, payload, responseCodeEvaluation, retries, sidelineResponseCodes)
 	if !status && err != nil {
 		return err
 	}
@@ -191,7 +191,8 @@ func (h *HTTPSink) retryPost(msg interface{}, state bool,
 }
 
 func (h *HTTPSink) retryExecute(method, url string, headers map[string]string,
-	data []byte, respEval func(respCode int, nonRetriableHttpStatusCodes []int) (error, bool), retries int) (bool, error) {
+	data []byte, respEval func(respCode int, nonRetriableHttpStatusCodes []int) (error, bool),
+	retries int, sidelineResponseCodes []int) (bool, error) {
 	var count = 0
 	for {
 		status, respCode := h.execute(method, url, headers, bytes.NewReader(data))
@@ -202,8 +203,8 @@ func (h *HTTPSink) retryExecute(method, url string, headers map[string]string,
 				return outcome, nil
 			}
 			count = count + 1
-			if retries != math.MaxInt32 && count > retries {
-				return outcome, errors.New(core.RetriesExceed)
+			if (retries != math.MaxInt32 && count > retries) || core.Contains(sidelineResponseCodes, respCode) {
+				return outcome, errors.New(core.SidelineMessage)
 			}
 		}
 		log.Printf("retry in execute %s \t %s ", method, url)

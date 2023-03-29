@@ -40,11 +40,12 @@ type DmuxConf struct {
 
 //Sideline holds config parameters for sideline
 type Sideline struct {
-	Retries           int         `json:"retries"`
-	ConsumerGroupName string      `json:"consumerGroupName"`
-	ClusterName       string      `json:"clusterName"`
-	ConnectionType    string      `json:"type"`
-	SidelineMeta      interface{} `json:"sidelineMeta"`
+	Retries               int         `json:"retries"`
+	SidelineResponseCodes []int       `json:"sidelineResponseCodes"`
+	ConsumerGroupName     string      `json:"consumerGroupName"`
+	ClusterName           string      `json:"clusterName"`
+	ConnectionType        string      `json:"type"`
+	SidelineMeta          interface{} `json:"sidelineMeta"`
 }
 
 // ControlMsg is the struct passed to Dmux control Channel to enable it
@@ -76,7 +77,7 @@ type Sink interface {
 	// Consume method gets The interface.
 	//TODO currently this method does not return error, need to solve for error
 	// handling
-	Consume(msg interface{}, retries int) error
+	Consume(msg interface{}, retries int, sidelineResponseCodes []int) error
 
 	//BatchConsume method is invoked in batch_size is configured
 	BatchConsume(msg []interface{}, version int)
@@ -352,13 +353,14 @@ func batchSetup(sz, qsz, batchsz int, sink Sink, version int) ([]chan interface{
 func simpleSetup(size, qsize int, sink Sink) ([]chan interface{}, *sync.WaitGroup) {
 	wg := new(sync.WaitGroup)
 	wg.Add(size)
+	var responseCodes []int
 	ch := make([]chan interface{}, size)
 	for i := 0; i < size; i++ {
 		ch[i] = make(chan interface{}, qsize)
 		go func(index int) {
 			sk := sink.Clone()
 			for msg := range ch[index] {
-				sk.Consume(msg, math.MaxInt32)
+				sk.Consume(msg, math.MaxInt32, responseCodes)
 			}
 			wg.Done()
 		}(i)
@@ -373,11 +375,11 @@ func sinkConsume(sink Sink, sinkChannel []chan ChannelObject, index int, sidelin
 	for channelObject := range sinkChannel[index] {
 		log.Printf("Inside Sink channel ")
 		retryError := backoff.Retry(func() error {
-			consumeError := sk.Consume(channelObject.Msg, sideline.Retries)
+			consumeError := sk.Consume(channelObject.Msg, sideline.Retries, sideline.SidelineResponseCodes)
 			if consumeError == nil {
 				return nil
 			}
-			if consumeError != nil && consumeError.Error() == RetriesExceed {
+			if consumeError != nil && consumeError.Error() == SidelineMessage {
 				sendToSidelineChannel := ChannelObject{
 					Msg:      channelObject.Msg,
 					Sideline: channelObject.Sideline,
