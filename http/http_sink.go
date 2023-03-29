@@ -203,7 +203,7 @@ func (h *HTTPSink) retryExecute(method, url string, headers map[string]string,
 				return outcome, nil
 			}
 			count = count + 1
-			if (retries != math.MaxInt32 && count > retries) || core.Contains(sidelineResponseCodes, respCode) {
+			if core.Contains(sidelineResponseCodes, respCode) || (retries != 0 && retries != math.MaxInt32 && count > retries) {
 				return outcome, errors.New(core.SidelineMessage)
 			}
 		}
