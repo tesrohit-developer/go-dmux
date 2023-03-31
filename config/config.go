@@ -38,10 +38,10 @@ func (c ConnectionType) getConfig(data []byte) interface{} {
 }
 
 //Start invokes Run of the respective connection in a go routine
-func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineEnabled bool, sidelineImpl interface{}) {
+func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineImpl interface{}) {
 	switch c {
 	case KafkaHTTP:
-		if sidelineEnabled && sidelineImpl != nil {
+		if sidelineImpl != nil {
 			confBytes, err := json.Marshal(conf)
 			if err != nil {
 				log.Fatal("Error in InitialisePlugin " + err.Error())
