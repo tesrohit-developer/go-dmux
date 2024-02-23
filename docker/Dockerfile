@@ -1,4 +1,4 @@
-ARG FROM_IMAGE=golang:1.19.5-debian11.6
+ARG FROM_IMAGE=golang:1.19.5-bullseye
 
 FROM $FROM_IMAGE as build
 
