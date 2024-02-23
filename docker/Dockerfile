@@ -1,6 +1,6 @@
 ARG FROM_IMAGE=golang:1.19.5-debian11.6
 
-FROM FROM_IMAGE as build
+FROM $FROM_IMAGE as build
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN git config --global http.sslverify false
 
 RUN go build -o bin/go-dmux
 
-FROM golang:1.19.5-debian11.6 as deploy
+FROM $FROM_IMAGE as deploy
 
 ENV user "go-dmux"
 ENV group "go-dmux"
