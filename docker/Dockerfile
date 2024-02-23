@@ -1,4 +1,4 @@
-FROM golang:1.18-bullseye as build
+FROM golang:1.19.5-debian11.6 as build
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN git config --global http.sslverify false
 
 RUN go build -o bin/go-dmux
 
-FROM golang:1.18-bullseye as deploy
+FROM golang:1.19.5-debian11.6 as deploy
 
 ENV user "go-dmux"
 ENV group "go-dmux"
