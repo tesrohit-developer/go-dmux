@@ -1,4 +1,6 @@
-FROM golang:1.19.5-debian11.6 as build
+ARG FROM_IMAGE=golang:1.19.5-debian11.6
+
+FROM FROM_IMAGE as build
 
 WORKDIR /app
 
