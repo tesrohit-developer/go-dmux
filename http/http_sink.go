@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	core "github.com/flipkart-incubator/go-dmux/core"
@@ -249,7 +250,7 @@ func (h *HTTPSink) execute(method, url string, headers map[string]string,
 			fmt.Printf("recovered in execute %s %v", url, r)
 		}
 	}()
-
+	strings.Replace(url, "#", "%23", -1)
 	//build request
 	request, err := http.NewRequest(method, url, payload)
 	if err != nil {
