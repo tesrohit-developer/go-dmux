@@ -46,9 +46,12 @@ func (c ConnectionType) Start(conf interface{}, enableDebug bool, sidelineImpl i
 			if err != nil {
 				log.Fatal("Error in InitialisePlugin " + err.Error())
 			}
-			initErr := sidelineImpl.(sideline_models.CheckMessageSideline).InitialisePlugin(confBytes)
+			enabled, initErr := sidelineImpl.(sideline_models.CheckMessageSideline).InitialisePlugin(confBytes)
 			if initErr != nil {
 				log.Fatal(initErr.Error())
+			}
+			if !enabled {
+				sidelineImpl = nil
 			}
 		}
 		connObj := &connection.KafkaHTTPConn{

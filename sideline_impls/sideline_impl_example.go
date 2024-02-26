@@ -25,6 +25,6 @@ func (c *CheckMessageSidelineImpl) SidelineMessage(msg []byte) sideline.Sideline
 	return sidelineMessageResponse
 }
 
-func (c *CheckMessageSidelineImpl) InitialisePlugin(confBytes []byte) error {
-	return nil
+func (c *CheckMessageSidelineImpl) InitialisePlugin(confBytes []byte) (bool, error) {
+	return true, nil
 }
