@@ -250,8 +250,9 @@ func (h *HTTPSink) execute(method, url string, headers map[string]string,
 			fmt.Printf("recovered in execute %s %v", url, r)
 		}
 	}()
-	strings.Replace(url, "#", "%23", -1)
+	url = strings.Replace(url, "#", "%23", -1)
 	//build request
+	fmt.Println("Url being used is ", url)
 	request, err := http.NewRequest(method, url, payload)
 	if err != nil {
 		log.Printf("failed in request build %s %s \n", url, err.Error())
