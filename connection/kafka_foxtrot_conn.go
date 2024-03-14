@@ -16,18 +16,18 @@ import (
 
 // **************** CONFIG ***********
 
-//KafkaFoxtrotConnConfig holds config to connect KafkaSource to http_sink
+// KafkaFoxtrotConnConfig holds config to connect KafkaSource to http_sink
 type KafkaFoxtrotConnConfig struct {
 	KafkaHTTPConnConfig
 }
 
-//KafkaFoxtrotConn struct to abstract this connections Run
+// KafkaFoxtrotConn struct to abstract this connections Run
 type KafkaFoxtrotConn struct {
 	EnableDebugLog bool
 	Conf           interface{}
 }
 
-//CustomURLKey  place holder name, which will be replaced by kafka key
+// CustomURLKey  place holder name, which will be replaced by kafka key
 const CustomURLKey = "__KEY_NAME__"
 
 func (c *KafkaFoxtrotConn) getConfiguration() *KafkaFoxtrotConnConfig {
@@ -37,7 +37,7 @@ func (c *KafkaFoxtrotConn) getConfiguration() *KafkaFoxtrotConnConfig {
 	return config
 }
 
-//Run method to start this Connection from source to sink
+// Run method to start this Connection from source to sink
 func (c *KafkaFoxtrotConn) Run() {
 	conf := c.getConfiguration()
 	log.Println("starting kafka_foxtrot with conf", conf)
@@ -61,13 +61,14 @@ func (c *KafkaFoxtrotConn) Run() {
 	d := core.GetDistribution(conf.Dmux.DistributorType, h)
 
 	dmux := core.GetDmux(conf.Dmux, d)
-	dmux.ConnectWithSideline(src, sk, nil)
+	var optionalParams core.DmuxOptionalParams = core.DmuxOptionalParams{c.EnableDebugLog}
+	dmux.ConnectWithSideline(src, sk, nil, optionalParams)
 	dmux.Join()
 }
 
 //******************KafkaSource Interface implementation ******
 
-//KafkaFoxtrotMessage is data attribute that will be passed from Source to Sink
+// KafkaFoxtrotMessage is data attribute that will be passed from Source to Sink
 type KafkaFoxtrotMessage struct {
 	KafkaMessage
 }
@@ -79,7 +80,7 @@ func getKafkaFoxtrotFactory() source.KafkaMsgFactory {
 type kafkaFoxtrotFactoryImpl struct {
 }
 
-//Create KafkaMessage which implments KafkaMsg and HTTPMsg and wraps sarama.ConsumerMessage
+// Create KafkaMessage which implments KafkaMsg and HTTPMsg and wraps sarama.ConsumerMessage
 func (*kafkaFoxtrotFactoryImpl) Create(msg *sarama.ConsumerMessage) source.KafkaMsg {
 	kafkaMsg := &KafkaFoxtrotMessage{}
 	kafkaMsg.KafkaMessage.Msg = msg
@@ -89,12 +90,12 @@ func (*kafkaFoxtrotFactoryImpl) Create(msg *sarama.ConsumerMessage) source.Kafka
 
 // **************** HTTPSink Interface implementation ***********
 
-//GetPayload implements HTTPMsg for HttpSink processing
+// GetPayload implements HTTPMsg for HttpSink processing
 func (k *KafkaFoxtrotMessage) GetPayload() []byte {
 	return k.Msg.Value
 }
 
-//GetHeaders implements HTTPMsg for HttpSink processing
+// GetHeaders implements HTTPMsg for HttpSink processing
 func (k *KafkaFoxtrotMessage) GetHeaders(conf sink.HTTPSinkConf) map[string]string {
 	header := make(map[string]string)
 	for _, val := range conf.Headers {
@@ -105,8 +106,8 @@ func (k *KafkaFoxtrotMessage) GetHeaders(conf sink.HTTPSinkConf) map[string]stri
 	return header
 }
 
-//GetURL implements HTTPMsg for HttpSink processing
-//This implementation passes in query parameter partition and offset for debuggin
+// GetURL implements HTTPMsg for HttpSink processing
+// This implementation passes in query parameter partition and offset for debuggin
 func (k *KafkaFoxtrotMessage) GetURL(endpoint string) string {
 	// log.Println("In GetURL ")
 	url := strings.Replace(endpoint, CustomURLKey, string(k.Msg.Key), 1)
@@ -126,8 +127,8 @@ func (k *KafkaFoxtrotMessage) GetDebugPath() string {
 	return k.URL
 }
 
-//BatchURL implements HTTPMsg for HttpSink processing
-//This implementation passes in query parameter partition and offset for debuggin
+// BatchURL implements HTTPMsg for HttpSink processing
+// This implementation passes in query parameter partition and offset for debuggin
 func (k *KafkaFoxtrotMessage) BatchURL(msgs []interface{}, endpoint string, version int) string {
 	url := strings.Replace(endpoint, CustomURLKey, string(k.Msg.Key), 1)
 	url = url + "/bulk"
@@ -150,7 +151,7 @@ func (k *KafkaFoxtrotMessage) BatchURL(msgs []interface{}, endpoint string, vers
 	return url + "?topic=" + topic + "&batch=" + builder.String()
 }
 
-//BatchPayload implements HTTPMsg for HttpSink processing
+// BatchPayload implements HTTPMsg for HttpSink processing
 func (k *KafkaFoxtrotMessage) BatchPayload(msgs []interface{}, version int) []byte {
 	payload := make([]interface{}, len(msgs))
 	for i := 0; i < len(msgs); i++ {
